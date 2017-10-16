@@ -121,7 +121,38 @@
 			\item Let us start with an uniform model, i.e.\ every $P^{x}_{w}$ as likely as every other one
 			\item For every $P^{x}_{w}$ we have $P_{\text{prior}}(P^{x}_{w}) = \frac{1}{Z}$
 			\item $Z$ is constant to make sure that all integrates to $1$
+			\item Means we think $P^{x}_{w}(the) = 1$ is as likely as a distribution which assumes all words are at least possible
 		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{How Does This Work}
+		\begin{itemize}
+			\item Lexicon: $L = \lbrace \text{Mary}, \text{sees}, \text{.}, \text{something}, \text{John}  \rbrace$
+			\item Dataset: ``Mary sees something ?''
+			\item What is the next word? (hint: ``.'')
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Quick Diversion}
+		\begin{itemize}
+			\item Lexicon: $L = \lbrace \text{Mary}, \text{sees}, \text{.}, \text{something}, \text{John}  \rbrace$
+			\item Dataset: ``Mary sees something ?''
+			\item What is the next word? (hint: ``.'')
+		\end{itemize}
+		
+		WWMLD -- what would maximum likelihood do? - pick the model that makes the data most likely!
+	\end{frame}
+	
+	\begin{frame}{How Does This Work}
+		WWMLD --
+		
+		\begin{align*}
+			P^{ml}_{w}(Mary) & = & \frac{1}{4}\\
+			P^{ml}_{w}(sees) & = & \frac{1}{4}\\
+			P^{ml}_{w}(something) & = & \frac{1}{4}\\
+			P^{ml}_{w}(.) & = & 0 \\
+			P^{ml}_{w}(John) & = & 0\\
+		\end{align*}		
 	\end{frame}
 	
 	\section{The Dirichlet Distribution}
