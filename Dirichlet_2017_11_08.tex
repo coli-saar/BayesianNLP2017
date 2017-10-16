@@ -1,0 +1,100 @@
+\documentclass[11pt]{beamer}
+\usetheme{Berkeley}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{forest}
+
+\author{Christoph Teichmann}
+\title{The Dirichlet Categorial Model}
+
+\subtitle{}
+
+\logo{}
+
+\institute{}
+
+\date{}
+
+\subject{}
+
+\setbeamercovered{transparent}
+
+\setbeamertemplate{navigation symbols}{}
+
+\begin{document}
+	
+	\begin{frame}
+		\maketitle
+	\end{frame}
+	
+	\begin{frame}{Teaching Goals}
+		\begin{itemize}
+			\item Basic properties of Dirichlet distribution
+			\item Dirichlet Categorial model
+			\item Chinese Restaurant Process
+			\item How to build a simple language model from that
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Categorial Variables in Computationl Linguistics}
+		\centering
+		We want probabilites for:
+				
+		\begin{itemize}
+			\item Next word given previous ones
+			\item Children given parent in constituent tree
+			\item Next Part-Of-Speech tag given previous ones
+		\end{itemize}
+		
+		\vspace{20pt} Mary sees $\lbrace$ the/something/John/EOS $\rbrace$ \dots
+	\end{frame}
+	
+	\begin{frame}{Categorial Variables in Computationl Linguistics}
+		\centering
+		We want probabilites for:
+		
+		\begin{itemize}
+			\item Next word given previous ones
+			\item Children given parent in constituent tree
+			\item Next Part-Of-Speech tag given previous ones
+		\end{itemize}
+		
+		\begin{tabular}{lr}
+			\begin{forest}
+				[S [ NP [Mary] ] [VP [ sees ] [NP [\dots] ] ] ]
+			\end{forest} &
+			\begin{tabular}{c}
+				$NP \rightarrow something$ \\
+				$NP \rightarrow John$
+			\end{tabular}
+		\end{tabular}
+	\end{frame}
+	
+	\begin{frame}{The Next Word -- The Bayesian Approach}
+		\centering
+		\begin{itemize}
+			\item Turn what you want into a random quantity
+
+			-- probabilities \checkmark
+			\item Find data that is connected to what you care about
+			
+			-- sentences from websites (tokenized) \checkmark
+			\item full model that connect random quantity of interest and data
+			
+			-- uh oh
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Simple Model P(text|Probabilities)}
+		\begin{itemize}
+			\item Good old n-gram model
+			\item $P(\text{w}_i|\text{w}_{i-1},\dots,\text{w}_{i-1})$
+			\item 
+		\end{itemize}
+	\end{frame}
+	
+\end{document}
