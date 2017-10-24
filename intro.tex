@@ -1,0 +1,157 @@
+\documentclass{beamer}
+
+%\usepackage{listings}
+%\usepackage[francais]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+%\usepackage{MyriadPro}
+\usepackage{cabin}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{positioning, backgrounds, shapes, chains, decorations.pathmorphing}
+\usepackage{amsmath,amsthm,amssymb}  
+\usepackage{stmaryrd}
+%\usepackage{mdsymbol}
+\usepackage{MnSymbol}
+\usepackage{xcolor}
+\usepackage{verbatim}
+\usepackage{array}
+%\usepackage{csquotes}
+
+
+\useoutertheme{infolines}
+
+\newcommand{\hidden}[1]{}
+
+%colors
+\definecolor{darkgreen}{rgb}{0,0.5,0}
+\usebeamercolor{block title}
+\definecolor{beamerblue}{named}{fg}
+\usebeamercolor{alert block title}
+\definecolor{beamealert}{named}{fg}
+
+
+%\newcommand{\prop}{\textsc{\textrm{prop}}}
+%\newcommand{\leftscopesign}{\raisebox{-0.75ex}{\scalebox{1.3}{$\cdot$}}\mid{}}
+%\newcommand{\rightscopesign}{ {} \mid {\raisebox{-0.75ex}{\scalebox{1.3}{$\cdot$}}}}
+
+%\newcommand{\plusl}[2]{#2\mathrel{\in_{\leftscopesign}}#1}
+%\newcommand{\plusr}[2]{#2\mathrel{\in_{\rightscopesign}}#1}
+
+%\newcommand{\dom}{\sqsubset}
+
+%\newcommand{\ldom}{\mathrel{\dom_{\leftscopesign}}}
+
+%\newcommand{\rdom}{\mathrel{\dom_{\rightscopesign}}}
+
+%\newcommand{\wdom}{\trianglelefteq}
+
+%\newcommand{\wldom}{\mathrel{\wdom_{\leftscopesign}}}
+
+%\newcommand{\wrdom}{\mathrel{\wdom_{\rightscopesign}}}
+
+
+\renewcommand{\colon}{\!:\!}
+
+
+\newcommand\paraitem{%
+ \quad
+ \makebox[\labelwidth][r]{%
+ \makelabel{%
+ \usebeamertemplate{itemize \beameritemnestingprefix item}}}\hskip\labelsep}
+
+
+\begin{document}
+
+\title{What is Bayesian Inference} 
+\author[Antoine Venant]{Christoph Teichmann \and Antoine Venant}
+%\institute{UDS COLI}
+\date{\today}
+\maketitle
+
+
+\begin{frame}
+  \frametitle{The Bayesian way of life}
+
+ % \begin{itemize}
+ % \item Let us assume there is a problem you want solve (generating text, infering a grammar, identifying distinct topics in a text), summarizing...)
+  %\end{itemize}
+  %\begin{block}{the Bayesian way of solving your problem}
+    \begin{enumerate}
+    \item Find a dataset "relevant" to your problem.
+    \item Reduce your problem to estimating the distribution of some variable quantity of interest $Y$ given the data.
+    \item Build a {\bf joint prior probabilistic model} $p(X,Y)$ describing {\bf both} the data $X$ and the quantity $Y$ you want to estimate.
+    \item[\alert{$\rightarrow$}]\alert{Obviously, the data and quantity of interrest should {\bf not} be independent and step 3 should reflect that fact!}
+    \item Condition on all observed data $x$, and get a \textbf{posterior} distribution for $Y$: $p(Y \mid X=x)$.
+    \item (Ideally) Assert how fit your model it, critize it and make a more realistic one.
+    \item use the posterior distribution of $Y$ to solve your problem.
+    \end{enumerate}
+  %\end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{A toy example: Bayesian dating service.}
+  \begin{exampleblock}{Problem}
+    In the course of building an online dating service, we would like to assess a \emph{matching score} between two registered users, as a basis for determining candidate couples. The score should be a real bumber ranging between 0 and 1.
+  \end{exampleblock}
+  \begin{exampleblock}{Data}
+    To this aim, we disposes only, for each of the two users, of the list of answers he/she provided to a standard multiple choice questionaire.
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}{First step: formalization}
+  \begin{itemize}
+  \item Assume an underlying probability space $\langle \Omega, p \rangle$.
+  \item Our problem reduces to estimating the distribution of a \emph{matching score} random variable $\Phi: \Omega \mapsto [0, 1]$ given the answers made by both users.
+  \item Let us forget about the actual content of the questionaire itself, and simply model our data as a sequence $\langle o_1, \dots o_n \rangle \in {0,1}^n$, $o_n = 1$ meaning that both users choosed the same answer to the $n^\textnormal{th}$ question of the questionaire, $o_n = 0$ meaning that they did not.
+  \item Accordingly, model the observed data as the outcome of a random vector $O: \Omega \mapsto \{0, 1\}^n$. Equivalently, we can see $O$ as a vector of random variables $(O_1, \dots, O_n)$ where  $(O_i: \Omega \mapsto \{0,1\}$).
+  \end{itemize}
+    
+\end{frame}
+
+\begin{frame}{Second step: Joint Model}
+  \begin{itemize}
+  \item Idea behind the model: we'll assume that both users answers each question independently of others questions, and that for each question, the probability that they choose the same answer is provided directly by their \emph{matching score}.
+  \item Given our formalization, this translates to further assuming that \[ p(O = (o_1, \dots o_n) \mid \Phi = \phi) = \phi^\alpha (1-\phi)^{n-\alpha} \] where $\alpha = \Sigma_{i=1}^n o_i$
+  \item To finally characterize a prior joint model, we need to set the prior probability on $\Phi$. We'll simply assume it's uniform on $[0,1]$: for $I \subseteq [0,1]$ \[P(\Phi \in I) = \int_I 1 dx\]
+    (for instance $P(\Phi \le 1/2) = \int_o^{1/2} 1 dx =  [x^2/2]^{1/2}_{0} = 1/2$)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Defining the 'full' prior model}
+  \begin{alertblock}{Are our definition consistent?}
+    \begin{itemize}
+    \item $\forall \phi \in [0,1]\, P(\Phi = \phi) = \int_\phi^\phi 1 dx = 0$.
+    \item So shouldn't $P(o \mid \Phi = \phi) = \frac{P(o, \Phi=\phi)}{P(\Phi=\phi)}$ be undefined if $P(\Phi = \phi)=0$?
+    \item No {\bf full} model yet: what is for instance $P(O = (o_1,\dots o_n))$?
+    \end{itemize}
+  \end{alertblock}
+
+  \begin{block}{Short answer:}
+    \begin{itemize}
+    \item True that 'classic' conditioning does not define $P(o \mid \Phi = \phi)$.  
+    \item But $P(o, \Phi = \phi) = P(o \mid \Phi = \phi)P(\phi) = 0$ still true under our definition. So we're not arming the axioms of probability theory.
+    \item define $P(O = (o1, \dots, o_n), \Phi \in I) = \int_I p(O = (o_1, \dots, o_n) \mid \Phi = x) dx$. (Exercise: check that this is a probability distribution).
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Step three: conditioning on observations $o_1, \dots, o_n$.}
+  
+  \[\begin{aligned}
+  p(\Phi \in I \mid O=(o_1, \dots, o_n)) &= \frac{p(\Phi \in I, O=(o_1, \dots, o_n))}{p(O=(o_1, \dots, o_n))}\\
+  &= \frac{\int_I p(O = (o_1, \dots, o_n) \mid \Phi = \phi) d\phi}{p(O=(o_1, \dots, o_n))}\\
+  &= \int_I \frac{p(O = (o_1, \dots, o_n) \mid \Phi = \phi)}{N} d\phi 
+    \end{aligned}\]
+  Where $N = p(O=(o_1, \dots, o_n))$ % = p(O=(o_1, \dots, o_n), \Phi \in [0,1]) = \int_0^1 p(O = (o_1, \dots, o_n) \mid \Phi = \phi) d\phi$
+
+  \begin{itemize}
+  \item We see that the {\bf posterior} distribution of the matching score $\Phi$ admits a density $f_{\textnormal{post}} = \frac{p(O = (o_1, \dots, o_n) \mid \Phi = \phi)}{N} = \frac{\phi^{\alpha}(1-\phi)^{n-\alpha}}{N}$
+  \end{itemize}
+  \end{frame}
+
+  
+
+\end{document}
