@@ -64,7 +64,7 @@
 
 \begin{document}
 
-\title{What is Bayesian Inference} 
+\title{Introduction to Bayesian Inference} 
 \author[Antoine Venant]{Christoph Teichmann \and Antoine Venant}
 %\institute{UDS COLI}
 \date{\today}
@@ -79,13 +79,13 @@
   %\end{itemize}
   %\begin{block}{the Bayesian way of solving your problem}
     \begin{enumerate}
-    \item Find a dataset "relevant" to your problem.
-    \item Reduce your problem to estimating the distribution of some variable quantity of interest $Y$ given the data.
-    \item Build a {\bf joint prior probabilistic model} $p(X,Y)$ describing {\bf both} the data $X$ and the quantity $Y$ you want to estimate.
-    \item[\alert{$\rightarrow$}]\alert{Obviously, the data and quantity of interrest should {\bf not} be independent and step 3 should reflect that fact!}
-    \item Condition on all observed data $x$, and get a \textbf{posterior} distribution for $Y$: $p(Y \mid X=x)$.
-    \item (Ideally) Assert how fit your model it, critize it and make a more realistic one.
-    \item use the posterior distribution of $Y$ to solve your problem.
+    \item<1-> Find a dataset "relevant" to your problem.
+    \item<2-> Reduce your problem to estimating the distribution of some variable quantity of interest $X$.
+    \item<3-> Build a {\bf joint prior probabilistic model} $p(X,Y)$ describing {\bf both} the data $O$ and the quantity $X$ you want to estimate.
+    \item<4->[\alert{$\rightarrow$}]\alert{Obviously, the data and quantity of interrest should {\bf not} be independent and step 3 should reflect that fact!}
+    \item<5-> Condition on all observed data $o$, and get a \textbf{posterior} distribution for $X$: $p(X \mid O=o)$.
+    \item<6-> (Ideally) Assert how fit your model it, critize it and make a more realistic one.
+    \item<7-> Use the posterior distribution of $Y$ to solve your problem.
     \end{enumerate}
   %\end{block}
 \end{frame}
@@ -93,38 +93,87 @@
 \begin{frame}
   \frametitle{A toy example: Bayesian dating service.}
   \begin{exampleblock}{Problem}
-    In the course of building an online dating service, we would like to assess a \emph{matching score} between two registered users, as a basis for determining candidate couples. The score should be a real bumber ranging between 0 and 1.
+    In order to build an automatic online dating service, we would like to assess a \emph{matching score} between two registered users, as a basis for the system to determine whether it should propose this two users a date with each other. The score should be a real bumber ranging between 0 and 1.
   \end{exampleblock}
   \begin{exampleblock}{Data}
-    To this aim, we disposes only, for each of the two users, of the list of answers he/she provided to a standard multiple choice questionaire.
+    When registering to the dating website, each of the two user answered the same set of $n$ multiple choice questions, and we dispose of these answers. Our data look like:
+    \begin{tabular}{|l|l|l|}
+      \hline
+      $Q$ & ans. User 0 & ans. User 1\\
+      \hline
+      $Q_1$ & $a)$ & $b)$\\
+      $Q_2$ & $c)$ & $c)$\\
+      \vdots & \vdots & \vdots\\
+      $Q_n$ & $a)$ & $d)$\\
+      \hline
+    \end{tabular}\\
+    (\emph{e.g.}: $Q_1:$ \emph{You prefer a)a good movie, b)a nice book, c)a delicious meal.}) 
   \end{exampleblock}
 \end{frame}
 
-\begin{frame}{First step: formalization}
+\begin{frame}
+  \frametitle{Simplified data}
+  \begin{itemize}
+  \item To achieve maximal simplicity, we will not use the particular content of questions.
+  \item We will use only the information of whether the two users' answers for a given question are the same or not.
+  \item We thus extract a simplified dataset as follows:\\
+    \begin{minipage}{0.48\linewidth}
+      \begin{tabular}{|l|l|l|}
+        \hline
+        $Q$ & ans. User 0 & ans. User 1\\
+        \hline
+        $Q_1$ & $a)$ & $b)$\\
+        $Q_2$ & $c)$ & $c)$\\
+        \vdots & \vdots & \vdots\\
+      $Q_n$ & $a)$ & $d)$\\
+        \hline
+      \end{tabular}
+    \end{minipage}
+    \begin{minipage}{0.05\linewidth}
+      $\Rightarrow$
+    \end{minipage}
+    \begin{minipage}{0.2\linewidth}
+      \begin{tabular}{|l|l|}
+        \hline
+        $Q$ & Match\\
+        \hline
+        $Q_1$ & no\\
+        $Q_2$ & yes\\
+        \vdots & \vdots\\
+        $Q_n$ & no\\
+        \hline
+      \end{tabular}
+    \end{minipage}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{First step: target and observations as random variables}
   \begin{itemize}
   \item Assume an underlying probability space $\langle \Omega, p \rangle$.
-  \item Our problem reduces to estimating the distribution of a \emph{matching score} random variable $\Phi: \Omega \mapsto [0, 1]$ given the answers made by both users.
-  \item Let us forget about the actual content of the questionaire itself, and simply model our data as a sequence $\langle o_1, \dots o_n \rangle \in {0,1}^n$, $o_n = 1$ meaning that both users choosed the same answer to the $n^\textnormal{th}$ question of the questionaire, $o_n = 0$ meaning that they did not.
-  \item Accordingly, model the observed data as the outcome of a random vector $O: \Omega \mapsto \{0, 1\}^n$. Equivalently, we can see $O$ as a vector of random variables $(O_1, \dots, O_n)$ where  $(O_i: \Omega \mapsto \{0,1\}$).
+  \item Our problem reduces to estimating the distribution of a \emph{matching score} random variable $\Phi: \Omega \mapsto [0, 1]$ after observing the answers made by both users.
+  \item Observed data is represented as a sequence $\langle o_1, \dots o_n \rangle \in \{0,1\}^n$
+  \item $o_n = 1$ means that both users choosed the same answer to the $n^\textnormal{th}$ question of the questionaire, $o_n = 0$ means that they did not.
+  \item Accordingly, assume that the observed data is in fact one outcome of a random vector $O: \Omega \mapsto \{0, 1\}^n$. Equivalently, we can see $O$ as a vector of random variables $(O_1, \dots, O_n)$ where  $(O_i: \Omega \mapsto \{0,1\}$).
   \end{itemize}
     
 \end{frame}
 
-\begin{frame}{Second step: Joint Model}
+\begin{frame}{Second step: build the joint Model}
   \begin{itemize}
-  \item Idea behind the model: we'll assume that both users answers each question independently of others questions, and that for each question, the probability that they choose the same answer is provided directly by their \emph{matching score}.
-  \item Given our formalization, this translates to further assuming that \[ p(O = (o_1, \dots o_n) \mid \Phi = \phi) = \phi^\alpha (1-\phi)^{n-\alpha} \] where $\alpha = \Sigma_{i=1}^n o_i$
-  \item To finally characterize a prior joint model, we need to set the prior probability on $\Phi$. We'll simply assume it's uniform on $[0,1]$: for $I \subseteq [0,1]$ \[P(\Phi \in I) = \int_I 1 dx\]
+  \item So far we only said ``there exist some joint distribution''. Did not precise which one.
+  \item Idea: assume that both users answers each question independently of others questions, and that probability of choosing matching answer equals the\emph{matching score}.
+  \item This translates into: \[ p(O = (o_1, \dots o_n) \mid \Phi = \phi) = \phi^\alpha (1-\phi)^{n-\alpha} \] where $\alpha = \Sigma_{i=1}^n o_i$
+  \item We also need to set a prior probability on $\Phi$. Simply assume it uniform on $[0,1]$: for $I \subseteq [0,1]$ \[P(\Phi \in I) = \int_I 1 dx\]
     (for instance $P(\Phi \le 1/2) = \int_o^{1/2} 1 dx =  [x^2/2]^{1/2}_{0} = 1/2$)
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Defining the 'full' prior model}
-  \begin{alertblock}{Are our definition consistent?}
+\begin{frame}{Mixing continuous and discrete models}
+  \begin{alertblock}{Not so obvious:}
     \begin{itemize}
     \item $\forall \phi \in [0,1]\, P(\Phi = \phi) = \int_\phi^\phi 1 dx = 0$.
     \item So shouldn't $P(o \mid \Phi = \phi) = \frac{P(o, \Phi=\phi)}{P(\Phi=\phi)}$ be undefined if $P(\Phi = \phi)=0$?
-    \item No {\bf full} model yet: what is for instance $P(O = (o_1,\dots o_n))$?
+    \item So far, no {\bf full} model: what is for instance $P(O = (o_1,\dots o_n))$?
     \end{itemize}
   \end{alertblock}
 
@@ -137,8 +186,13 @@
   \end{block}
 \end{frame}
 
+%\begin{frame}{Small digression about the (more) general case:}
+%  If for $\theta \in R^n$ $A$ is a discrete-valued random variable taking values in some countable set $D$ and $B$ is a real-valued random variable admitting a density $f$, then
+%  $P(A, B)$
+%\end{frame}
+
 \begin{frame}
-  \frametitle{Step three: conditioning on observations $o_1, \dots, o_n$.}
+  \frametitle{Third step: conditioning on observations $o_1, \dots, o_n$.}
   
   \[\begin{aligned}
   p(\Phi \in I \mid O=(o_1, \dots, o_n)) &= \frac{p(\Phi \in I, O=(o_1, \dots, o_n))}{p(O=(o_1, \dots, o_n))}\\
@@ -150,8 +204,65 @@
   \begin{itemize}
   \item We see that the {\bf posterior} distribution of the matching score $\Phi$ admits a density $f_{\textnormal{post}} = \frac{p(O = (o_1, \dots, o_n) \mid \Phi = \phi)}{N} = \frac{\phi^{\alpha}(1-\phi)^{n-\alpha}}{N}$
   \end{itemize}
-  \end{frame}
+\end{frame}
 
+\begin{frame}{Predictions}
+  \begin{itemize}
+  \item Need to determine normalizing factor $N = p(O=(o_1, \dots, o_n)) = \int_0^1 p(O=(o_1, \dots, o_n) \mid \Phi = \phi) d\phi$
+  \item Hard to do in general! We'll use different techniques to avoid this computation in the seminar.
+  \item But easy, in the present case. Closed form solution: $N=\frac{1}{(n+1)C_n^{\alpha}}$ (Exercise: proove it!).
+  \item Posterior density $f_{\textnormal{post}}(\phi) = \frac{\phi^{\alpha}(1-\phi)^{n-\alpha}}{N}$ is an instance of the {\bf Beta distribution} (obtained with pair of parameters ($\alpha+1$, $n-\alpha+1$)). We'll encounter this again in the future!
+  \item (Posterior-) Expected value for $\phi$: $\frac{\alpha-1}{n-1}$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{The more data...}
+  \begin{center}
+    \includegraphics[width = \linewidth]{posteriors.pdf}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Posterior distributions:}
+  \begin{center}
+  \begin{minipage}{0.45\linewidth}
+  \begin{exampleblock}{$\alpha=4, n=9$}
+    \begin{tabular}{|l|l|}
+      \hline
+      $I$ & $P(\Phi \in I)$\\
+          $[0, 0.1]$ & $0.0016$\\
+          $[0.1, 0.2]$ & $0.0312$\\
+          $[0.2, 0.3]$ & $0.1175$\\
+          $[0.3, 0.4]$ & $0.2166$\\
+          $[0.4, 0.5]$ & $0.2562$\\
+          $[0.5, 0.6]$ & $0.2107$\\
+          $[0.6, 0.7]$ & $0.1189$\\
+          $[0.7, 0.8]$ & $0.0410$\\
+          $[0.8, 0.9]$ & $0.0062$\\
+          $[0.9, 1.0]$ & $0.0001$\\
+          \hline
+    \end{tabular}
+  \end{exampleblock}
+  \end{minipage}
+  \begin{minipage}{0.45\linewidth}
+    \begin{exampleblock}{$\alpha=40, n=90$}
+      \begin{tabular}{|l|l|}
+      \hline
+      $I$ & $P(\Phi \in I)$\\
+      $[0, 0.1]$ & $0.0000$\\
+      $[0.1, 0.2]$ & $0.0000$\\
+      $[0.2, 0.3]$ & $0.0017$\\
+      $[0.3, 0.4]$ & $0.1880$\\
+      $[0.4, 0.5]$ & $0.6630$\\
+      $[0.5, 0.6]$ & $0.1458$\\
+      $[0.6, 0.7]$ & $0.0014$\\
+      $[0.7, 0.8]$ & $0.0000$\\
+      $[0.8, 0.9]$ & $0.0000$\\
+      $[0.9, 1.0]$ & $0.0000$\\
+      \hline
+    \end{tabular}
+    \end{exampleblock}
+  \end{minipage}
+  \end{center}
+\end{frame}
   
-
 \end{document}
