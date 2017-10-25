@@ -164,7 +164,7 @@
   \item Idea: assume that both users answers each question independently of others questions, and that probability of choosing matching answer equals the\emph{matching score}.
   \item This translates into: \[ p(O = (o_1, \dots o_n) \mid \Phi = \phi) = \phi^\alpha (1-\phi)^{n-\alpha} \] where $\alpha = \Sigma_{i=1}^n o_i$
   \item We also need to set a prior probability on $\Phi$. Simply assume it uniform on $[0,1]$: for $I \subseteq [0,1]$ \[P(\Phi \in I) = \int_I 1 dx\]
-    (for instance $P(\Phi \le 1/2) = \int_o^{1/2} 1 dx =  [x^2/2]^{1/2}_{0} = 1/2$)
+    (for instance $P(\Phi \le 1/2) = \int_o^{1/2} 1 dx =  [x]^{1/2}_{0} = 1/2$)
   \end{itemize}
 \end{frame}
 
