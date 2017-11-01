@@ -143,14 +143,25 @@
 	
 	\begin{frame}{Posterior}
 		\begin{align*}
-			\overbrace{P(P_{w}^x \vert w_3,w_2,w_1)}^{\text{Posterior}} & = & \left(\overbrace{\prod_{i \in \{1,2,3\}} P_{w}^{x}(w_i)}^{\text{Word Model}}\right) \overbrace{\frac{1}{Z}}^{\text{Prior}}
+			\overbrace{P(P_{w}^x \vert w_3,w_2,w_1)}^{\text{Posterior}} & \sim \left(\overbrace{\prod_{i \in \{1,2,3\}} P_{w}^{x}(w_i)}^{\text{Word Model}}\right) \overbrace{\frac{1}{Z}}^{\text{Prior}}
 		\end{align*}
+		
+		\vspace{10pt} Is this (proportional to) a known distribution?
 	\end{frame}
 	
 	\section{The Dirichlet Distribution}
 	
 	\begin{frame}{Is This A Known Distribution?}
-		Dirichlet Distribution -- A distribution over 
+		Dirichlet Distribution -- Distributions over probability distributions $P_X$ with outcomes $o_1,\dots,o_k$:
+		
+		\begin{align*}
+			P_{Dir}(P_X) & = \frac{\prod_{i \in [1,K]} P_{X}(o_i)^{\alpha_i}}{B(\boldsymbol{\alpha})}
+		\end{align*}
+		
+		\vspace{10pt} \begin{itemize}
+			\item Here	$\alpha_i$ are parameters -- there are lots of Dirichlet Distributions
+			\item $B(\boldsymbol{\alpha})$ is a normalizer depending on all the $a_i$ -- look it up on Wikipedia
+		\end{itemize}
 	\end{frame}
 	
 	\section{Maximum Likelihood}
