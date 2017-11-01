@@ -1,5 +1,5 @@
 \documentclass[11pt]{beamer}
-\usetheme{Berkeley}
+\usetheme{PaloAlto}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -8,12 +8,14 @@
 \usepackage{amssymb}
 \usepackage{forest}
 
-\author{Christoph Teichmann}
+\setbeamercolor{logo}{bg=white}
+
+\author{Christoph Teichmann \and Antoine Venant}
 \title{The Dirichlet Categorial Model}
 
 \subtitle{}
 
-\logo{}
+\logo{\includegraphics[height=0.65cm]{SaarLogo}}
 
 \institute{}
 
@@ -21,7 +23,7 @@
 
 \subject{}
 
-\setbeamercovered{transparent}
+\setbeamercovered{invisible}
 
 \setbeamertemplate{navigation symbols}{}
 
@@ -35,8 +37,8 @@
 	
 	\begin{frame}{Teaching Goals}
 		\begin{itemize}
-			\item Basic properties of Dirichlet distribution
-			\item Dirichlet Categorial model
+			\item Basic properties of Dirichlet Distribution
+			\item Dirichlet Categorial Model
 			\item Chinese Restaurant Process
 			\item How to build a simple language model from that
 		\end{itemize}
@@ -46,11 +48,11 @@
 	
 	\begin{frame}{Categorial Variables in Computationl Linguistics}
 		\centering
-		We want probabilites for:
+		We want probabilites for random variables with discrete outcomes:
 				
 		\begin{itemize}
 			\item Next word given previous ones
-			\item Children given parent in constituent tree
+			\item Children given parent in binary constituent tree
 			\item Next Part-Of-Speech tag given previous ones
 		\end{itemize}
 		
@@ -59,11 +61,11 @@
 	
 	\begin{frame}{Categorial Variables in Computationl Linguistics}
 		\centering
-		We want probabilites for:
+		We want probabilites for random variables with discrete outcomes:
 		
 		\begin{itemize}
 			\item Next word given previous ones
-			\item Children given parent in constituent tree
+			\item Children given parent in binary constituent tree
 			\item Next Part-Of-Speech tag given previous ones
 		\end{itemize}
 		
@@ -78,31 +80,34 @@
 		\end{tabular}
 	\end{frame}
 	
-	\section{A Simple Model}
+	\section{A Simple Approach}
 	
 	\begin{frame}{The Next Word -- The Bayesian Approach}
 		\centering
 		\begin{itemize}
-			\item Turn what you want into a random quantity
-
-			-- probabilities \checkmark
-			\item Find data that is connected to what you care about
-			
-			-- sentences from websites (tokenized) \checkmark
-			\item full model that connect random quantity of interest and data
-			
-			-- uh oh
+			\item<1-> Find a dataset relevant to your problem
+			\begin{itemize}
+				\item<2-> sentences from websites (tokenized) \checkmark
+			\end{itemize}
+			\item<1-> Reduce your problem to estimating a random quantity of interest
+			\begin{itemize}
+				\item<3-> Probabilities for next word in context \checkmark 
+			\end{itemize}
+			\item<1-> Build joint probabilistic model the data and the quantity to estimate
+			\begin{itemize}
+				\item<4-> uh oh
+			\end{itemize}
 		\end{itemize}
 	\end{frame}
 	
 	\begin{frame}{Simple Model P(text|Probabilities)}
 		\begin{itemize}
 			\item N-Gram model
-			\item $P(\text{w}_i|\text{w}_{i-1},\dots,\text{w}_{0}) = P(\text{w}_i|\text{w}_{i-1},\dots,\text{w}_{i-(n-1)})$
-			\item let us start with $n=1$ / Unigram: $P(\text{w}_i|\text{w}_{i-1},\dots,\text{w}_{0}) = P(\text{w}_i)$ 
+			\item $P_w(\text{w}_i|\text{w}_{i-1},\dots,\text{w}_{0}) = P_w(\text{w}_i|\text{w}_{i-1},\dots,\text{w}_{i-(n-1)})$
+			\item let us start with $n=1$, i.e., Unigram Model: $P_w(\text{w}_i|\text{w}_{i-1},\dots,\text{w}_{0}) = P_w(\text{w}_i)$ 
 		\end{itemize}
 		
-		This gives model for data given word probabilities -- where do word probabilities come from?
+		\vspace{10pt}Model for data given word probabilities -- where to get word probabilities?
 	\end{frame}
 	
 	\begin{frame}{Simplest Choice -- How to Write Word Probabilities}
@@ -110,30 +115,47 @@
 			\item Assume finite lexicon $L$
 			\item We will write the word probabilities as $P_w(x)$ for every $w \in L$
 			\item $\left( \sum_{x \in L} P_w(x) \right) = 1$
-			\item For all $x$ in $L$ $P_w(x) \geq 0$
-			\item Write different distributions as $P_{w}^{x}$, $P_{w}^{y}$ \dots
-			\item Write prior, i.e.\ distribution over $P_{w}$s as $P_{\text{prior}}$
+			\item For all $x$ in $L$: $P_w(x) \geq 0$
+			\item Write different distributions as $P_{w}^{x}$, $P_{w}^{y}$ \dots and $P_{w}^{X}$ as variable over probabilities
+			\item Write prior, i.e.\ distribution over $P_{w}^{X}$ as $P_{\text{prior}}$
+			\item Full joint model $P\left( P_{w}^{X},w_1,\dots,w_n \right)$
 		\end{itemize}
 	\end{frame}
 	
 	\begin{frame}{Simplest Choice -- Everything Equally Likely}
 		\begin{itemize}
-			\item Let us start with an uniform model, i.e.\ every $P^{x}_{w}$ as likely as every other one
-			\item For every $P^{x}_{w}$ we have $P_{\text{prior}}(P^{x}_{w}) = \frac{1}{Z}$
-			\item $Z$ is constant to make sure that all integrates to $1$
-			\item Means we think $P^{x}_{w}(the) = 1$ is as likely as a distribution which assumes all words are at least possible
+			\item Let us start with an uniform model, i.e.\ $P_{prior}\left( P^{x}_{w} \right) = \frac{1}{Z}$
+			\item $Z$ is a constant to ensure integration to $1$
+			\item We think $P^{x}_{w}(the) = 1$ is as likely as any other distribution
 		\end{itemize}
+		
+		\vspace{10pt}Similar to model from last session
 	\end{frame}
 	
 	\begin{frame}{How Does This Work}
 		\begin{itemize}
 			\item Lexicon: $L = \lbrace \text{Mary}, \text{sees}, \text{.}, \text{something}, \text{John}  \rbrace$
-			\item Dataset: ``Mary sees something ?''
+			\item Dataset: $D=$``Mary sees something''
+			\item What is the Posterior, i.e., what is $P(P_{w}^X \vert w_3,w_2,w_1)$
 			\item What is the next word? (hint: ``.'')
 		\end{itemize}
 	\end{frame}
 	
-	\begin{frame}{Quick Diversion}
+	\begin{frame}{Posterior}
+		\begin{align*}
+			\overbrace{P(P_{w}^x \vert w_3,w_2,w_1)}^{\text{Posterior}} & = & \left(\overbrace{\prod_{i \in \{1,2,3\}} P_{w}^{x}(w_i)}^{\text{Word Model}}\right) \overbrace{\frac{1}{Z}}^{\text{Prior}}
+		\end{align*}
+	\end{frame}
+	
+	\section{The Dirichlet Distribution}
+	
+	\begin{frame}{Is This A Known Distribution?}
+		Dirichlet Distribution -- A distribution over 
+	\end{frame}
+	
+	\section{Maximum Likelihood}
+	
+	\begin{frame}{Quick Diversion -- Maximum Likelihood}
 		\begin{itemize}
 			\item Lexicon: $L = \lbrace \text{Mary}, \text{sees}, \text{.}, \text{something}, \text{John}  \rbrace$
 			\item Dataset: ``Mary sees something ?''
@@ -143,7 +165,7 @@
 		WWMLD -- what would maximum likelihood do? - pick the model that makes the data most likely!
 	\end{frame}
 	
-	\begin{frame}{How Does This Work}
+	\begin{frame}{Quick Diversion -- Maximum Likelihood}
 		WWMLD --
 		
 		\begin{align*}
