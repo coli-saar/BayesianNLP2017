@@ -114,7 +114,7 @@
 	\begin{frame}{Simplest Choice -- How to Write Word Probabilities}
 		\begin{itemize}
 			\item Assume finite lexicon $L$
-			\item We will write the word probabilities as $P_w(x)$ for every $w \in L$
+			\item We will write the word probabilities as $P_w(x)$
 			\item $\left( \sum_{x \in L} P_w(x) \right) = 1$
 			\item For all $x$ in $L$: $P_w(x) \geq 0$
 			\item Write different distributions as $P_{w}^{x}$, $P_{w}^{y}$ \dots and $P_{w}^{X}$ as variable over probabilities
@@ -205,32 +205,146 @@
 
 		\vspace{10pt}		
 		\begin{align*}
-			P(P_{w}^x) & = \left(\prod_{w_i \in L} P_{w}^{x}(w_i)^{\alpha_{w_i}}\right) \frac{1}{B(\boldsymbol{\alpha})}
+			P(P_{w}^x) & = \frac{\left(\prod_{w_i \in L} P_{w}^{x}(w_i)^{\alpha_{w_i}}\right)}{B(\boldsymbol{\alpha})}
 		\end{align*}
+		
+		\vspace{10pt} Where $\alpha_{\text{Mary}}=\alpha_{\text{sees}} = \alpha_{\text{something}} = 2$ and $\alpha_{\text{John}}=\alpha_{\text{.}}=1$
 	\end{frame}
 	
-	\section{Maximum Likelihood}
-	
-	\begin{frame}{Quick Diversion -- Maximum Likelihood}
+	\begin{frame}{What We Have}
 		\begin{itemize}
-			\item Lexicon: $L = \lbrace \text{Mary}, \text{sees}, \text{.}, \text{something}, \text{John}  \rbrace$
-			\item Dataset: ``Mary sees something ?''
-			\item What is the next word? (hint: ``.'')
+			\item We now have a posterior probability for the different $P_{w}^{x}$ and know it is a Dirichlet Distribution
+			\item What are the probabilities for the next word -- what is the predictive distribution?
 		\end{itemize}
-		
-		WWMLD -- what would maximum likelihood do? - pick the model that makes the data most likely!
 	\end{frame}
 	
-	\begin{frame}{Quick Diversion -- Maximum Likelihood}
-		WWMLD --
-		
+	\begin{frame}{Predictive Distribution}
 		\begin{align*}
-			P^{ml}_{w}(Mary) & = & \frac{1}{4}\\
-			P^{ml}_{w}(sees) & = & \frac{1}{4}\\
-			P^{ml}_{w}(something) & = & \frac{1}{4}\\
-			P^{ml}_{w}(.) & = & 0 \\
-			P^{ml}_{w}(John) & = & 0\\
-		\end{align*}		
+			P(w_4) = \int_{P_{w}^x} P_{w}^x(w_4) \frac{\left(\prod_{w_i \in L} P_{w}^{x}(w_i)^{\alpha_{w_i}}\right)}{B(\boldsymbol{\alpha})} d P_{w}^x
+		\end{align*}
+		
+		\vspace{10pt} Let us just look it up, e.g., the Dirichlet write up at \url{https://people.eecs.berkeley.edu/~stephentu/} 
 	\end{frame}
+	
+	\begin{frame}{Predictive Distribution}
+		\begin{align*}
+			P(w_4) & = \int_{P_{w}^x} P_{w}^x(w_4) \frac{\left(\prod_{w_i \in L} P_{w}^{x}(w_i)^{\alpha_{w_i}}\right)}{B(\boldsymbol{\alpha})} d P_{w}^x \\
+			P(w_4) & = \frac{\alpha_{w_4}}{\sum_{w_i \in L} \alpha_{w_i}}
+		\end{align*}
+			
+		\vspace{10pt}
+		\begin{itemize}
+			\item Likelihood of outcome is $\alpha$ for that outcome divided by sum of $\alpha$s for all outcomes (finish example on table)
+			\item This model is called a Dirichlet Categorial Distribution
+		\end{itemize}
+		 
+	\end{frame}
+	
+	\begin{frame}{The Next Word -- The Bayesian Approach}
+		\centering
+		\begin{itemize}
+			\item Find a dataset relevant to your problem
+			\begin{itemize}
+				\item sentences from websites (tokenized) \checkmark
+			\end{itemize}
+			\item Reduce your problem to estimating a random quantity of interest
+			\begin{itemize}
+				\item Probabilities for next word in context \checkmark 
+			\end{itemize}
+			\item Build joint probabilistic model the data and the quantity to estimate
+			\begin{itemize}
+				\item unigram model with uniform prior \checkmark
+			\end{itemize}
+			\item<2-> Get a posterior distribution
+			\begin{itemize}
+				\item<2-> We get a Dirichlet Distribution posterior, which is well understood \checkmark
+				\item<2-> We can predict the next word using knowledge about Dirichlet Categorial Model \checkmark
+			\end{itemize}
+			\item<3-> Check model quality and revise if necessary
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Is Our Model Reasonable?}
+		Predictive probabilities for any word position:
+		
+		\begin{align}
+			P(w_4 = \text{.}) & = \frac{1}{8} \\
+			P(w_4 = \text{Mary}) & = \frac{2}{8}
+		\end{align}
+		
+		\vspace{10pt}Data may support this, but it seems unlikely given what we know about English
+	\end{frame}
+	
+	\begin{frame}{A Better Model}
+		\begin{itemize}
+			\item We assumed that we have unigram word probabilities -- switch to e.g.\ a bigram model
+			\item Instead of assuming uniform probability for different $P_{w}^{x}$ we could assume Dirichlet Prior with different $\alpha$s
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{New Model}
+		\begin{itemize}
+			\item<1-> We now have to find probabilities $P_{w}^{x}(w_i|w_{i-1})$
+			\item<1-> For each we will have a Dirichlet Prior with $\alpha$s proportional to observed word frequencies in corpus
+			\item<2-> Let us work through that for the data:
+				\begin{itemize}
+					\item<2-> ``Mary saw something .''
+					\item<2-> ``John saw'' 
+				\end{itemize}
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Conjugate Model}
+		What is the general Posterior with the Dirichlet Model after words $w_1,\dots,w_n$?
+		
+		\begin{align}
+			P(P_{w}^{x}) & = \frac{\prod_{w_i \in L} P_{w}^{x}(w_i)^{\alpha_{w_i}+\sum_{j \in [1,n]} 1(w_j = w_i)}}{Z}
+		\end{align}			
+		
+		\begin{itemize}
+			\item Another Dirichlet Distribution
+			\item If prior and piosterior are same type $\rightarrow$ conjugate model
+			\item helpful because understanding the prior means you understand the posterior
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{The Next Word -- The Bayesian Approach}
+		\centering
+		\begin{itemize}
+			\item Find a dataset relevant to your problem
+			\begin{itemize}
+				\item sentences from websites (tokenized) \checkmark
+			\end{itemize}
+			\item Reduce your problem to estimating a random quantity of interest
+			\begin{itemize}
+				\item Probabilities for next word in context \checkmark 
+			\end{itemize}
+			\item Build joint probabilistic model the data and the quantity to estimate
+			\begin{itemize}
+				\item unigram model with uniform prior \checkmark
+			\end{itemize}
+			\item Get a posterior distribution
+			\begin{itemize}
+				\item We get a Dirichlet Distribution posterior, which is well understood \checkmark
+				\item We can predict the next word using knowledge about Dirichlet Categorial Model \checkmark
+			\end{itemize}
+			\item Check model quality and revise if necessary
+			\begin{itemize}
+				\item Larger N-Grams with better Dirichlet Prior \checkmark
+			\end{itemize}
+		\end{itemize}
+	\end{frame}
+	
+	\section{The Dirichlet Process}
+	
+	\begin{frame}{Further Model Problems}
+		``Mary saw a cake .''
+		
+		\vspace{10pt}\begin{itemize}
+			\item There are probably more than 5 words in any language
+		\end{itemize}
+	\end{frame}
+	
+	\section{Chinese Restaurant Process}
 	
 \end{document}
