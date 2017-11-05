@@ -20,7 +20,7 @@ ax.minorticks_on()
 ax.legend(loc=9)
 setp(ax.get_legend().get_texts(),fontsize='small')
 ax.set_ylim(0,2.6)
-ax.set_xlabel("Value of $P_X$ for first outcome")
+ax.set_xlabel("Value of $P^x$ for first outcome")
 ax.set_ylabel("PDF")
 
 fig.savefig("dirichlet_distribution_pdf.pdf",bbox_inches="tight",\
@@ -36,7 +36,7 @@ ax.minorticks_on()
 ax.legend(loc=9)
 setp(ax.get_legend().get_texts(),fontsize='small')
 ax.set_ylim(0,2.6)
-ax.set_xlabel("Value of $P_X$ for first outcome")
+ax.set_xlabel("Value of $P^x$ for first outcome")
 ax.set_ylabel("PDF")
 
 fig.savefig("dirichlet_distribution_sparse_pdf.pdf",bbox_inches="tight",\
@@ -52,7 +52,7 @@ ax.minorticks_on()
 ax.legend(loc=9)
 setp(ax.get_legend().get_texts(),fontsize='small')
 ax.set_ylim(0,2.6)
-ax.set_xlabel("Value of $P_X$ for first outcome")
+ax.set_xlabel("Value of $P^x$ for first outcome")
 ax.set_ylabel("PDF")
 
 fig.savefig("dirichlet_distribution_dense_pdf.pdf",bbox_inches="tight",\
