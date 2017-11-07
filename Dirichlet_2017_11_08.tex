@@ -52,7 +52,7 @@
 			\item Basic properties of Dirichlet Distribution
 			\item Dirichlet Categorial Model
 			\item Chinese Restaurant Process
-			\item How to build a simple language model from that
+			\item How to build a simple language model
 		\end{itemize}
 	\end{frame}
 	
@@ -60,7 +60,7 @@
 	
 	\begin{frame}{Categorial Variables in Computationl Linguistics}
 		\centering
-		We want probabilites for random variables with discrete outcomes:
+		We want probabilites $P(\text{outcome}_1)$, $P(\text{outcome}_2)$, \dots for random variables with discrete outcomes:
 				
 		\begin{itemize}
 			\item Next word given previous ones
@@ -73,7 +73,7 @@
 	
 	\begin{frame}{Categorial Variables in Computationl Linguistics}
 		\centering
-		We want probabilites for random variables with discrete outcomes:
+		We want probabilites $P(\text{outcome}_1)$, $P(\text{outcome}_2)$, \dots for random variables with discrete outcomes:
 		
 		\begin{itemize}
 			\item Next word given previous ones
@@ -83,7 +83,7 @@
 		
 		\begin{tabular}{lr}
 			\begin{forest}
-				[S [ NP [Mary] ] [VP [ sees ] [NP [\dots] ] ] ]
+				[S [ NP [Mary] ] [VP [ sees ] [NP ] ] ]
 			\end{forest} &
 			\begin{tabular}{c}
 				$NP \rightarrow something$ \\
@@ -103,7 +103,8 @@
 			\end{itemize}
 			\item<1-> Reduce your problem to estimating a random quantity of interest
 			\begin{itemize}
-				\item<3-> Probabilities for next word in context \checkmark 
+				\item<3-> Probabilities for next word in context \checkmark
+				\item<3-> We want a probability $P(P(W_{\text{next}} = Mary) = 0.4)$, $P(P(W_{\text{next}} = \text{Mary}) = 0.5)$, $P(P(W_{\text{next}} = \text{Mary}) = 0.6)$ \dots
 			\end{itemize}
 			\item<1-> Build joint probabilistic model of the data and the quantity to estimate
 			\begin{itemize}
@@ -112,22 +113,44 @@
 		\end{itemize}
 	\end{frame}
 	
-	\begin{frame}{Simple Model P(text|Probabilities)}
-		\begin{itemize}
-			\item N-Gram model
-			\item $P(\overbrace{W_i}^{\text{random variable for word}}|\overbrace{w_{i-1}}^{\text{concrete value for word}},\dots,w_{0}) = P(W_i|w_{i-1},\dots,w_{i-(n-1)})$
-			\item let us start with $n=1$, i.e., Unigram Model: $P(W_i|w_{i-1},\dots,w_{0}) = P(W_i)$ 
-		\end{itemize}
-		
-		\vspace{10pt}Model for data given word probabilities -- where to get word probabilities?
+	\begin{frame}{Bayes Theorem}
+		$v$ - value of interesting variable, $d$ - value of data, we are interesting in $P(v|d)$
+	
+		\begin{align*}
+			P(v,d) & = P(v|d)P(d) \\
+			P(v,d) & = P(d|v)P(v) \\
+			P(v|d) & = \frac{P(d|v)P(v)}{P(d)} \\
+			P(v|d) & = \frac{\overbrace{P(d|v)}^{likelihood} \overbrace{P(v)}^{prior}}{\overbrace{\sum_{v'} P(v',d)}^{normalizer}}
+		\end{align*}
 	\end{frame}
 	
-	\begin{frame}{Simplest Choice -- How to Write Word Probabilities}
+	\begin{frame}{What Do We Need}
 		\begin{itemize}
-			\item Assume finite lexicon $L$
-			\item Probability word is ``Mary''  $P(W = \text{Mary})$
-			\item Random variable over distributions $P^X$, $P^x$ single distribution
-			\item Full joint model $P\left( P^{X},W_1,\dots,W_n \right)$
+			\item $P(\text{text} | \text{probabilities})$
+			\item $P(\text{probabilities})$
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Simple Model $P(text|probabilities)$}
+		\begin{itemize}
+			\item Text generated from n-Gram model
+			\item $P(\overbrace{W_i}^{\text{random variable for i-th word}}|\overbrace{w_{i-1}}^{\text{concrete value for word}},\dots,w_{0}) = P(W_i|w_{i-1},\dots,w_{i-(n-1)})$
+			\item Let us start with $n=1$, i.e., Unigram Model: $P(W_i|w_{i-1},\dots,w_{0}) = P(W)$
+			\item Text draw word by word from $P(W)$
+		\end{itemize}
+		
+		\vspace{10pt}We have model for data given word probabilities -- need a model to give us probabilities for $P(W = \text{Mary}) = 0.01$ or $P(W = \text{Mary}) = 0.5$?
+	\end{frame}
+	
+	\begin{frame}{Simplest Choice -- Set-UP}
+		\begin{itemize}
+			\item Assume finite lexicon $L$ -- possible outcomes
+			\item Random variable over distributions $P^X$, $P^x$ single outcome
+				\begin{itemize}
+					\item $P^x$ could be $P^x(\text{Mary}) = 0.1$, $P^x(\text{sees}) = 0.3$ \dots 
+				\end{itemize}
+			\item Probability word is ``Mary''  $P^x(W = \text{Mary})$
+			\item \textbf{Full joint model} $\mathbf{\underline{P\left( P^{X},W_1,\dots,W_n \right)}}$
 		\end{itemize}
 	\end{frame}
 	
@@ -135,36 +158,51 @@
 		\begin{itemize}
 			\item Let us start with an uniform model, i.e.\ $P\left( P^X = P^{x} \right) = \frac{1}{Z}$
 			\item $Z$ is a constant to ensure integration to $1$
-			\item We think $P^{x}(the) = 0.9$ is as likely as any other value
+			\item We think $P^{x}(\text{the}) = 0.9$ is as likely as $P^{x}(\text{the}) = 0.2$ or $P^{x}(\text{the}) = 0.03$
+			\item We think $P^{x}(\text{Mary}) = 0.9$ and $P^{x}(\text{the}) = 0.1$ is as likely as $P^{x}(\text{Mary}) = 0.2$ and $P^{x}(\text{the}) = 0.8$
 		\end{itemize}
 		
 		\vspace{10pt}Similar to model from last session
 	\end{frame}
 	
-	\begin{frame}{How Does This Work}
+	\begin{frame}{How Does This Work -- Example}
 		\begin{itemize}
-			\item Lexicon: $L = \lbrace \text{Mary}, \text{sees}, \text{.}, \text{something}, \text{John}  \rbrace$
-			\item Dataset: $D=$``Mary sees something''
-			\item What is the Posterior, i.e., what is $P(P^x | \text{something},\text{sees},\text{Mary})$ for a given $P^x$
-			\item What is the next word? (hint: ``.'')
+			\item<1-> Lexicon: $L = \lbrace \text{Mary}, \text{sees}, \text{.}, \text{something}, \text{John}  \rbrace$
+			\item<1-> Dataset: $D=$``Mary sees something''
+		\end{itemize}
+		
+		\vspace{10pt} Relevant Questions:
+		
+		\begin{itemize}
+			\item<2-> What is the posterior, i.e., what is $P(P^x | \text{something},\text{sees},\text{Mary})$ for a given $P^x$?
+			\item<3-> What is $P(W_{next} | \text{something},\text{sees},\text{Mary})$? - predictive distribution
 		\end{itemize}
 	\end{frame}
 	
-	\begin{frame}{Posterior}		
+	\begin{frame}{Posterior}
+	
+		The posterior is proportional to this (why?):
+	
 		\begin{align*}
-			\overbrace{P(P^X = P^x \vert w_3,w_2,w_1)}^{\text{Posterior}} & \sim \left(\overbrace{\prod_{i \in \{1,2,3\}} P^{X}(w_i)}^{\text{Word Model}}\right) \overbrace{\frac{1}{Z}}^{\text{Prior}}
+			\overbrace{P(P^X = P^x \vert w_3,w_2,w_1)}^{P(\text{Posterior})} & \propto \left(\overbrace{\prod_{i \in \{1,2,3\}} P^{X}(w_i)}^{P(\text{text}|\text{probs})}\right) \overbrace{\frac{1}{Z}}^{P(\text{probs})}
 		\end{align*}
 		
-		\vspace{10pt} Is this (proportional to) a known distribution?
+		\vspace{10pt}
+		\begin{itemize}
+			\item<2-> What is the normalizer?
+			\item<2-> What is the mean?
+			\item<2-> Where is the maximum of this posterior?
+			\item<3-> Maybe map this to known distribution?
+		\end{itemize}
 	\end{frame}
 	
 	\section{The Dirichlet Distribution}
 	
 	\begin{frame}{Is This A Known Distribution?}
-		Dirichlet Distribution -- distribution over probability distributions $P^x$ with outcomes $o_1,\dots,o_k$:
+		Dirichlet Distribution -- distribution over probability distributions $P^x$ with different outcomes $w_1 \in L$:
 		
 		\begin{align*}
-			P_{Dir}(P^x) & = \frac{\prod_{i \in [1,K]} P^{x}(o_i)^{\alpha_i}}{B(\boldsymbol{\alpha})}
+			P_{Dir}(P^x) & = \frac{\prod_{w \in L} P^{x}(w)^{\alpha_i - 1}}{B(\boldsymbol{\alpha})}
 		\end{align*}
 		
 		\vspace{10pt} \begin{itemize}
@@ -173,26 +211,49 @@
 		\end{itemize}
 	\end{frame}
 	
-	\begin{frame}{It is a Dirichlet Distribution!}
+	\begin{frame}{Is This A Known Distribution?}
+		Dirichlet Distribution -- distribution over probability distributions $P^x$ with different outcomes $w_1 \in L$:
+		
 		\begin{align*}
-			P_{Dir}(P^X) & = \frac{\prod_{i \in [1,K]} P^{x}(o_i)^{\alpha_i}}{B(\boldsymbol{\alpha})} \\
-			P(P^x \vert w_3,w_2,w_1) & \sim \left(\prod_{i \in \{1,2,3\}} P^{x}(w_i)\right) \frac{1}{Z} \\
-			& \sim \frac{\prod_{w \in L} P{x}(w)^{\sum_{i \in [1,3]} 1(w_i = w)}}{Z}
+			P_{Dir}(P^x) & = \frac{\prod_{w \in L} P^{x}(w)^{\alpha_i - 1}}{B(\boldsymbol{\alpha})}
 		\end{align*}
 		
-		\vspace{10pt}\begin{itemize}
-			\item Here the $\alpha$s correspond to counts of how often we have seen each word $+1$
-			\item Note that the uniform distribution over probability distributions is the same as the Dirichlet Distribution with $\boldsymbol{\alpha} = \boldsymbol{1}$ 
+		\vspace{10pt} \begin{itemize}
+			\item Mean a probability distribution with $P^x(w) = \frac{\alpha}{\sum_{w' \in L} \alpha_{w'}}$
+			\item Maximum $=$ mean if $\alpha$s all greater 1
 		\end{itemize}
+	\end{frame}	
+	
+	\begin{frame}{It is a Dirichlet Distribution!}
+		Let us work through this on the table:
+	
+		\begin{align*}
+			P_{Dir}(P^x) & = \frac{\prod_{w \in L} P^{x}(w)^{\alpha_i - 1}}{B(\boldsymbol{\alpha})} \\
+			P(P^x \vert w_3,w_2,w_1) & \propto \left(\prod_{i \in \{1,2,3\}} P^{x}(w_i)\right) \frac{1}{Z} \\
+			& \propto \frac{\prod_{w \in L} P{x}(w)^{\sum_{i \in [1,3]} 1(w_i = w)}}{Z}
+		\end{align*}
 	\end{frame}
 	
+	\begin{frame}{It is a Dirichlet Distribution!}
+		Let us work through this on the table:
+	
+		\begin{align*}
+			P_{Dir}(P^x) & = \frac{\prod_{w \in L} P^{x}(w)^{\alpha_i - 1}}{B(\boldsymbol{\alpha})} \\
+			P(P^x \vert w_3,w_2,w_1) & = \frac{\prod_{w \in L} P{x}(w)^{\sum_{i \in [1,3]} 1(w_i = w)}}{B(\text{sums})}
+		\end{align*}
+		
+		\vspace{10pt} $\alpha$s correspond to frequency of each word $+1$
+	\end{frame}	
+	
 	\begin{frame}{Visualizing a Dirichlet Distribution With Two Outcomes}
+		Say we have $P^x(1)$ and $P^x(2)$
+	
 		\begin{center}
-			\includegraphics[width=0.75\linewidth]{dirichlet_distribution_pdf}
+			\includegraphics[width=0.7\linewidth]{dirichlet_distribution_pdf}
 		\end{center}
 		
 		\begin{tiny}
-			Generated with code based on code found at: \url{https://commons.wikimedia.org/wiki/File:Beta_distribution_pdf.svg} by user Horas based on the work of user Krishnavedala
+			Generated with code based on code found at: \url{commons.wikimedia.org/wiki/File:Beta_distribution_pdf.svg} by user Horas
 		\end{tiny}
 	\end{frame}
 		
@@ -209,7 +270,7 @@
 	\end{frame}
 		
 	\begin{frame}{Back to the Example}
-		For our example our posterior is:
+		For our example our posterior is (table):
 
 		\vspace{10pt}		
 		\begin{align*}
@@ -219,16 +280,35 @@
 		\vspace{10pt} Where $\alpha_{\text{Mary}}=\alpha_{\text{sees}} = \alpha_{\text{something}} = 2$ and $\alpha_{\text{John}}=\alpha_{\text{.}}=1$
 	\end{frame}
 	
-	\begin{frame}{What We Have}
+	\begin{frame}{Next Step}
 		\begin{itemize}
-			\item We now have a posterior probability for the different $P_{w}^{x}$ and know it is a Dirichlet Distribution
-			\item What are the probabilities for the next word -- what is the predictive distribution?
+			\item Have posterior probability for the different $P^{x}$
+			\item Know it is a Dirichlet Distribution
+			\item What are the probabilities for next word -- what is predictive distribution?
 		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}
+		For a given $P^x$:
+		
+		\begin{align*}
+			P(w_{next},P^x|w_1,\dots,w_n) & = \overbrace{P^{x}(w_{next})}^{P(\text{text}|\text{probs})}\overbrace{P(P^x|w_1,\dots,w_n)}^{\text{posterior for $P^x$}}
+		\end{align*}
+		
+		But we need to sum (actually integrate) over all possible $P^x$
 	\end{frame}
 	
 	\begin{frame}{Predictive Distribution}
 		\begin{align*}
-			P(W_4 = w_4) = \int_{P^x} P^x(w_4) \frac{\left(\prod_{w \in L} P^{x}(w)^{\alpha_{w}}\right)}{B(\boldsymbol{\alpha})} d P^x
+			P(w_{next}) = \int_{P^x} \overbrace{P^x(w_{next})}^{Categorial} \overbrace{\frac{\left(\prod_{w \in L} P^{x}(w)^{\alpha_{w}-1}\right)}{B(\boldsymbol{\alpha})}}^{Dirichlet} d P^x
+		\end{align*}
+			
+		\vspace{10pt} Combines a Categorial and Dirichlet Distribution -- called a Dirichlet Categorial Model, well known
+	\end{frame}
+	
+	\begin{frame}{Predictive Distribution}
+		\begin{align*}
+			P(w_{next}) = \int_{P^x} \overbrace{P^x(w_{next})}^{Categorial} \overbrace{\frac{\left(\prod_{w \in L} P^{x}(w)^{\alpha_{w}-1}\right)}{B(\boldsymbol{\alpha})}}^{Dirichlet} d P^x
 		\end{align*}
 		
 		\vspace{10pt} Let us just look it up, e.g., the Dirichlet write up at \url{https://people.eecs.berkeley.edu/~stephentu/} 
@@ -236,14 +316,13 @@
 	
 	\begin{frame}{Predictive Distribution}
 		\begin{align*}
-			P(W_4 = w_4) & = \int_{P^x} P^x(w_4) \frac{\left(\prod_{w \in L} P^{x}(w)^{\alpha_{w}}\right)}{B(\boldsymbol{\alpha})} d P^x \\
-			P(W_4 = w_4) & = \frac{\alpha_{w_4}}{\sum_{w \in L} \alpha_{w}}
+			P(w_{\text{next}}) & = \int_{P^x} P^x(w_{\text{next}}) \frac{\left(\prod_{w \in L} P^{x}(w)^{\alpha_{w}-1}\right)}{B(\boldsymbol{\alpha})} d P^x \\
+			P(w_{\text{next}}) & = \frac{\alpha_{w_{\text{next}}}}{\sum_{w \in L} \alpha_{w}}
 		\end{align*}
 			
 		\vspace{10pt}
 		\begin{itemize}
-			\item Likelihood of outcome is $\alpha$ for that outcome divided by sum of $\alpha$s for all outcomes (finish example on table)
-			\item This model is called a \textbf{Dirichlet Categorial Distribution}
+			\item Probability of outcome is $\alpha$ for that outcome divided by sum of $\alpha$s for all outcomes (finish example on table)
 		\end{itemize}
 		 
 	\end{frame}
@@ -275,10 +354,10 @@
 	\begin{frame}{Is Our Model Reasonable?}
 		Predictive probabilities for any word position:
 		
-		\begin{align}
-			P(W_4 = \text{.}) & = \frac{1}{8} \\
-			P(W_4 = \text{Mary}) & = \frac{2}{8}
-		\end{align}
+		\begin{align*}
+			P(W_{\text{next}} = \text{.}) & = \frac{1}{8} \\
+			P(W_{\text{next}} = \text{Mary}) & = \frac{2}{8}
+		\end{align*}
 		
 		\vspace{10pt}Data may support this, but it seems unlikely given what we know about English
 	\end{frame}
@@ -286,14 +365,14 @@
 	\begin{frame}{A Better Model}
 		\begin{itemize}
 			\item We assumed that we have unigram word probabilities -- switch to e.g.\ a bigram model
-			\item Instead of assuming uniform probability for different $P^{x}$ we could assume Dirichlet Prior with different $\alpha$s
+			\item Instead of assuming uniform probability for different $P^{x}$ we could use Dirichlet as prior with different $\alpha$s
 		\end{itemize}
 	\end{frame}
 	
 	\begin{frame}{New Model}
 		\begin{itemize}
+			\item<1-> We will have a Dirichlet Prior with $\alpha$s proportional to observed word frequencies in some corpus
 			\item<1-> We now have to find probabilities $P^{x}(W_i = w_i|w_{i-1})$
-			\item<1-> For each we will have a Dirichlet Prior with $\alpha$s proportional to observed word frequencies in some corpus
 			\item<2-> Let us work through that for the data:
 				\begin{itemize}
 					\item<2-> ``Mary saw something .''
@@ -305,14 +384,15 @@
 	\begin{frame}{Conjugate Model}
 		What is the general posterior with the Dirichlet model after words $w_1,\dots,w_n$?
 		
-		\begin{align}
-			P(P^{x}) & = \frac{\prod_{w \in L} P^{x}(w)^{\alpha_{w}+\sum_{i \in [1,n]} 1(w_i = w)}}{Z}
-		\end{align}			
+		\begin{align*}
+			P(P^{x}) & = \frac{\prod_{w \in L} P^{x}(w)^{\alpha_{w}-1+\sum_{i \in [1,n]} 1(w_i = w)}}{Z}
+		\end{align*}			
 		
 		\begin{itemize}
 			\item Another Dirichlet Distribution
-			\item If prior and piosterior are same type $\rightarrow$ conjugate model
-			\item helpful because understanding the prior means you understand the posterior
+			\item Prior and piosterior same type $\rightarrow$ conjugate model
+			\item Dirichlet Distribution prior is conjugate for Categorial Distribution likelihood
+			\item Understanding prior -- understanding posterior
 		\end{itemize}
 	\end{frame}
 	
@@ -348,7 +428,11 @@
 	\begin{frame}{Further Model Problems}
 		``Mary saw a cake .''
 		
-		\vspace{10pt}Probably more than 5 words in English
+		\vspace{10pt}
+		\begin{itemize}
+			\item More than 5 words in language
+			\item Maybe even infinitely many words
+		\end{itemize}
 	\end{frame}
 	
 	\begin{frame}{Moving to the Dirichlet Process}
@@ -361,6 +445,8 @@
 	\end{frame}
 	
 	\begin{frame}{Extension to Infinite Number of Variables}
+		We need a prior for $P^x$ when $L$ is infinite $\rightarrow$ infinitely many probabilities $\rightarrow$ need a stochastic process
+	
 		\begin{itemize}
 			\item Use what we know about Dirichlet Distribution
 			\item How can we define an infinite list of $\alpha$s?
@@ -379,12 +465,12 @@
 		\end{itemize}
 		
 		\begin{tikzpicture}
-			\node[draw,circle] (1) at (0,0) {ongoing};
-			\node[draw,circle] (2) at (3,0) {finished};
+			\node[draw,circle] (1) at (0,0) {1};
+			\node[draw,circle] (2) at (3,0) {2};
 			
 			\path
 			(1) edge [loop above] node {a:0.1} (1);
-			\path (1) edge node [above] {b:0.9} (2);
+			\path[->] (1) edge node [above] {b:0.9} (2);
 		\end{tikzpicture}
 		
 		\vspace{10pt} If $\alpha = 10$ what is $\alpha_{\text{ab}}$?
@@ -412,22 +498,17 @@
 		\centering
 		
 		\begin{tikzpicture}
-			\node[draw,circle] (1) at (0,0) {ongoing};
-			\node[draw,circle] (2) at (3,0) {finished};
+			\node[draw,circle] (1) at (0,0) {1};
+			\node[draw,circle] (2) at (3,0) {2};
 		
-			\path
-			(1) edge [loop above] node {a:0.1} (1);
-			\path (1) edge node [above] {b:0.9} (2);
+			\path (1) edge [loop above] node {a:0.1} (1);
+			\path[->] (1) edge node [above] {b:0.9} (2);
 		\end{tikzpicture}
 		
 		\begin{align*}
-			P_{Dir}(P_X) & = \frac{\prod_{i \in [1,K]} P_{X}(o_i)^{\alpha_i}}{B(\boldsymbol{\alpha})} \\
-			\alpha = 10
-		\end{align*}
-		
-		\begin{align*}
-		P(P^x(b) = 0.2,P^x_(ab) = 0.5) & = &
-		\frac{\overbrace{0.2^{9}}^{b} \times \overbrace{0.5^{0.9}}^{ab} \times
+			P_{Dir}(P_X) & = \frac{\prod_{w \in L} P_{X}(w)^{\alpha_w}}{B(\boldsymbol{\alpha})} \\
+			\alpha & = 10 \\
+		P(P^x(b) = 0.2,P^{x}(ab) = 0.5) & = \frac{\overbrace{0.2^{9}}^{b} \times \overbrace{0.5^{0.9}}^{ab} \times
 			\overbrace{0.3^{0.1}}^{\text{everything else}}}{B(\langle 9,0.9,0.1 \rangle)}
 		\end{align*}
 	\end{frame}
@@ -440,7 +521,7 @@
 			\end{itemize}
 			\item How to define a process?
 			\begin{itemize}
-				\item Define probability distribution for any finite selection of variables
+				\item Define probability distribution for any finite selection of variables \checkmark
 			\end{itemize}
 		\end{itemize}
 	\end{frame}
@@ -449,9 +530,9 @@
 		\begin{itemize}
 			\item Bigram Model
 			\item Infinitely many possible words $w_i$
-			\item Probabilities for each $P(W_i|w_{i-1},w_{i-2})$ come from Dirichlet Process
+			\item Probabilities for each $P(W_i|w_{i-1})$ come from Dirichlet Process
 			\item Pick some concentration parameter $\alpha$
-			\item use a HMM over Morphems to define base probabilities $P(X)$
+			\item use a Markov Chain over morphems to define base probabilities $P(X)$
 		\end{itemize}
 		
 		\vspace{10pt} What is the predictive density / what is the posterior?
@@ -466,7 +547,7 @@
 	\end{frame}
 	
 	\begin{frame}{Posterior}
-		Still a Dirichlet Process!
+		Still a Dirichlet Process! -- table
 		
 		\vspace{10pt} Seen ``ab'' as first word - now $\alpha_{ab}' = \alpha_{ab}+1$, $\alpha' = \alpha + 1$ 
 	\end{frame}
@@ -476,53 +557,16 @@
 	\begin{frame}{Can We Make This Simpler?}
 		\begin{itemize}
 			\item Chinese Restaurant Process -- metaphor for Dirichlet Categorial Model
+			\item Model just for words
 			\item Every word is a table
 			\item Number of people at table $x$ is $\alpha_x$
 			\item People are likely to sit at popular tables
 		\end{itemize}
 	\end{frame}
 	
-	\begin{frame}{Example}
-		\centering
-		\begin{tikzpicture}
-			\node[draw,circle,minimum size=2cm] (b) at (0,0) {b: 9};
-			\node[draw,circle,minimum size=2cm] (ab) at (3,0) {ab: 0.9};
-			\node[draw,circle,minimum size=2cm] (aab) at (0,-3) {aab : 0.09};
-			\node[draw,circle,minimum size=2cm] (dots) at (3,-3) {\dots};
-		\end{tikzpicture}
-		
-		\vspace{10pt} Chance the first costumer sits at ``b'' $\frac{9}{10}$
-	\end{frame}
-	
-	\begin{frame}{Example}
-		\centering
-		\begin{tikzpicture}
-		\node[draw,circle,minimum size=2cm] (b) at (0,0) {b: 9};
-		\node[draw,circle,minimum size=2cm] (ab) at (3,0) {ab: 0.9};
-		\node[draw,circle,minimum size=2cm] (aab) at (0,-3) {aab : 0.09};
-		\node[draw,circle,minimum size=2cm] (dots) at (3,-3) {\dots};
-		\end{tikzpicture}
-		
-		\vspace{10pt} Chance the first costumer sits at ``ab'' $\frac{0.9}{10}$
-	\end{frame}
-	
-	\begin{frame}{Example}
-		\centering
-		\begin{tikzpicture}
-		\node[draw,circle,minimum size=2cm] (b) at (0,0) {b: 9};
-		\node[draw,circle,minimum size=2cm] (ab) at (3,0) {ab: 1.9};
-		\node[draw,circle,minimum size=2cm] (aab) at (0,-3) {aab : 0.09};
-		\node[draw,circle,minimum size=2cm] (dots) at (3,-3) {\dots};
-		\end{tikzpicture}
-		
-		\vspace{10pt} First costumer sits at ``ab''
-		
-		\vspace{10pt} Chance the second costumer sits at ``ab'' $\frac{1.9}{11}$
-	\end{frame}
-	
 	\begin{frame}{Presentation in Papers}
 		\begin{itemize}
-			\item Usual presentation: tables are created when first costumer sits at them
+			\item Usual presentation: tables created when first costumer sits at them
 			\item New table created with $\frac{\alpha}{\alpha+\text{seen}}$
 			\item New table label -- according to base probability distribution
 			\item  Sitting at old table $\frac{\text{costumers old table}}{\alpha+\text{seen}}$
