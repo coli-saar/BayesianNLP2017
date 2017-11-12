@@ -1,0 +1,92 @@
+\documentclass[11pt]{beamer}
+\usetheme{PaloAlto}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{forest}
+\usepackage{url}
+
+\setbeamercolor{logo}{bg=white}
+
+\author{Christoph Teichmann \and Antoine Venant}
+\title{The Dirichlet Categorial Model}
+
+\subtitle{}
+
+\logo{\includegraphics[height=0.65cm]{SaarLogo}}
+
+\institute{}
+
+\date{}
+
+\subject{}
+
+\setbeamercovered{invisible}
+
+\setbeamertemplate{navigation symbols}{}
+
+\begin{document}
+	
+	\AtBeginSection[]{
+		\begin{frame}
+			\vfill
+			\centering
+			\begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+				\usebeamerfont{title}\insertsection\par%
+			\end{beamercolorbox}
+			\vfill
+		\end{frame}
+	}
+	
+	\begin{frame}
+		\maketitle
+	\end{frame}
+	
+	\section{Goals}
+	
+	\begin{frame}{Teaching Goals}
+		\begin{itemize}
+			\item Problem of Bayesian Inference
+			\item Markov Chain Monte Carlo
+			\item Metropolis-Hasting Technique
+			\item Gibbs Technique
+		\end{itemize}
+	\end{frame}
+	
+	\section{Motivation}
+	
+	\begin{frame}{Our Model From Last Session}
+		\centering
+		We were discussing how to learn a language model:
+		
+		\vspace{10pt} \begin{itemize}
+			\item Bigram podel for text
+			\item Probabilities are hidden variables
+			\item Dirichlet Prior for probabilities
+		\end{itemize}
+		
+		\vspace{10pt} Can we improve this model?
+	\end{frame}
+		
+	\begin{frame}{Hidden States}
+		\centering
+		Assume the words are generated from hidden states
+		
+		\vspace{10pt}
+		\begin{itemize}
+			\item $h \in H$ hidden tags
+			\item $w \in L$ words
+			\item $P_w$ distribution over words give hidden tags (one per tag)
+			\item $P_h$ distribution over hidden tags given previous tag (one per tag) and initial tag
+			\item $P_w$ and $P_h$ have Dirichlet Prior
+		\end{itemize}
+		
+		$$P(w_1,w_2,\dots) = P(P_h)P(P_w) P_h(h_0) \prod_{i \in 1,\dots} P(w_i|h_i)P_h(h_i|h_{i-1})$$
+	\end{frame}
+	
+	
+		
+\end{document}
