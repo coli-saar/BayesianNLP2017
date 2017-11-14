@@ -156,7 +156,7 @@
 		When you have an annoying some over $T$ you do not consider every possible asignment of tags, you only consider a few representative ones.
 	\end{frame}
 	
-	\begin{frame}{What Does it Mean to Be Representative}
+	\begin{frame}{What Does it Mean to be Representative}
 		Let us make our problem more general:
 		
 		\begin{align*}
@@ -177,5 +177,219 @@
 			\item Then $\lim_{n \rightarrow \infty} \sum_{n} \frac{1}{n} f(v_i) = \sum_{V} f(V) P(V)$
 		\end{itemize}
 	\end{frame}
+	
+	\begin{frame}{What Does it Mean to be Representative?}
+		We will try to generate a sequence as if each $v_i$ was drawn from $P(V)$
+		
+		\vspace{10pt} But how do we do this?
+	\end{frame}
+	
+	\begin{frame}{For Simple Cases}
+		For simple distributions (categorial) solutions exist based on pseudo-random number generators.
+		
+		\vspace{10pt} But we have a hard case here!
+	\end{frame}
+	
+	\section{Markov Chains}
+	
+	\begin{frame}{Markov Chain Trick}
+		\begin{itemize}
+			\item  Produce a Markov Chain (later)
+			\item  Produce sequence $V_1,V_2,\dots$ from Markov Chain
+			\item Under certain Conditions pected value
+			\item Then $\lim_{n \rightarrow \infty} \sum_{n} \frac{1}{n} f(v_i) = \sum_{V} f(V) P(V)$
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{What is a Markov Chain}
+		\begin{itemize}
+			\item Set of states $V$ -- will be variables of interest, can be infinite (but we assume discrete)
+			\item Initial Probability $P(V_0)$
+			\item Transition Probability $P(V_i|v_{i-1})$
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Example}
+		How to create $v_1,v_2,\dots$ from this:
+		
+		\begin{tikzpicture}[very thick]
+			\node[draw,circle] (1) at (0,0) {1};
+			\node[draw,circle] (2) at (4,2) {2};
+			\node[draw,circle] (3) at (-4,2) {3};
+			
+			\node (11) at (0,-2) {0.3};
+			\node (22) at (4,0) {0.7};
+			\node (33) at (-4,0) {0.0};
+			
+			\path[draw,->] (11) edge (1);
+			\path[draw,->] (22) edge (2);
+			\path[draw,->] (33) edge (3);
+			
+			\path[draw,->] (1) edge[bend left] node[left] {0.5} (2) edge[bend right] node[right] {0.5} (3);
+			
+			\path[draw,->] (2) edge[bend left] node[right] {0.5} (1) edge[loop above] node[right] {0.5} (2);
+			
+			\path[draw,->] (3) edge[bend right] node[left] {0.5} (1) edge[loop above] node[right] {0.5} (3);
+		\end{tikzpicture}
+	\end{frame}
+	
+	\begin{frame}{What are the Magic Requirements?}
+		What do we need so: $\lim_{n \rightarrow \infty} \sum_{n} \frac{1}{n} f(v_i) = \sum_{V} f(V) P(V)$?
+	\end{frame}
+	
+	\begin{frame}{Magic Requirement 1: Invariant Distribution}
+		Invariant distribution $I(V)$ of chain $=$ $P(V)$
+		
+		\vspace{10pt} What is invariant distribution?
+	\end{frame}
+	
+	\begin{frame}{Magic Requirement 1: Invariant Distribution}
+		Invariant distribution $I(V)$ of chain $=$ $P(V)$
+		
+		\vspace{10pt} $I(V)$ s.t. for all $v$: $I(v) = \sum_{v' \in V} P(v|v')I(v')$
+		
+		\vspace{10pt} Initial probability does not matter
+	\end{frame}
+	
+	\begin{frame}{Example}
+		$I(1) = I(2) = I(3) = \frac{1}{3} $ -- Show!
+		
+		\begin{tikzpicture}[very thick]
+		\node[draw,circle] (1) at (0,0) {1};
+		\node[draw,circle] (2) at (4,2) {2};
+		\node[draw,circle] (3) at (-4,2) {3};
+		
+		\node (11) at (0,-2) {0.3};
+		\node (22) at (4,0) {0.7};
+		\node (33) at (-4,0) {0.0};
+		
+		\path[draw,->] (11) edge (1);
+		\path[draw,->] (22) edge (2);
+		\path[draw,->] (33) edge (3);
+		
+		\path[draw,->] (1) edge[bend left] node[left] {0.5} (2) edge[bend right] node[right] {0.5} (3);
+		
+		\path[draw,->] (2) edge[bend left] node[right] {0.5} (1) edge[loop above] node[right] {0.5} (2);
+		
+		\path[draw,->] (3) edge[bend right] node[left] {0.5} (1) edge[loop above] node[right] {0.5} (3);
+		\end{tikzpicture}
+	\end{frame}
+	
+	\begin{frame}{Magic Requirement 2: Irreducibility}
+		Irreducible: Same $I(v)$, no magic!
+		
+		\begin{tikzpicture}[very thick]
+			\node[draw,circle] (1) at (0,0) {1};
+			\node[draw,circle] (2) at (4,2) {2};
+			\node[draw,circle] (3) at (-4,2) {3};
+		
+			\node (11) at (0,-2) {0.0};
+			\node (22) at (4,0) {0.0};
+			\node (33) at (-4,0) {1.0};
+		
+			\path[draw,->] (11) edge (1);
+			\path[draw,->] (22) edge (2);
+			\path[draw,->] (33) edge (3);
+		
+			\path[draw,->] (1) edge[loop above] node[right] {1.0} (1);
+			
+			\path[draw,->] (2) edge[loop above] node[right] {1.0} (2);
+			
+			\path[draw,->] (3) edge[loop above] node[right] {1.0} (3);
+		\end{tikzpicture}
+	\end{frame}
+	
+	\begin{frame}{Magic Requirement 3: Recurrence}
+		Probability of returning is 1 -- always true for finite.
+		
+		\begin{tikzpicture}[very thick]
+		\node[draw,circle] (1) at (0,0) {1};
+		\node[draw,circle] (2) at (4,2) {2};
+		\node[draw,circle] (3) at (-4,2) {3};
+		
+		\node (11) at (0,-2) {0.3};
+		\node (22) at (4,0) {0.7};
+		\node (33) at (-4,0) {0.0};
+		
+		\path[draw,->] (11) edge (1);
+		\path[draw,->] (22) edge (2);
+		\path[draw,->] (33) edge (3);
+		
+		\path[draw,->] (1) edge[bend left] node[left] {0.5} (2) edge[bend right] node[right] {0.5} (3);
+		
+		\path[draw,->] (2) edge[bend left] node[right] {0.5} (1) edge[loop above] node[right] {0.5} (2);
+		
+		\path[draw,->] (3) edge[bend right] node[left] {0.5} (1) edge[loop above] node[right] {0.5} (3);
+		\end{tikzpicture}
+	\end{frame}
+	
+	\begin{frame}{Markov Chain Trick}
+		\begin{itemize}
+			\item  Produce a Markov Chain
+			\item  Produce sequence $V_1,V_2,\dots$ from Markov Chain
+			\item If Markove Chain Recurrent, 
+			\item Then $\lim_{n \rightarrow \infty} \sum_{n} \frac{1}{n} f(v_i) = \sum_{V} f(V) P(V)$ 
+			\item[] See "Markov Chains" by James Norris
+			\item[] relevant chapters available online \url{http://www.statslab.cam.ac.uk/~james/Markov/})
+		\end{itemize}
+	\end{frame}
+	
+	\section{Invariant Tricks}
+	
+	\begin{frame}{How the Magic Happens}
+		\begin{itemize}
+			\item Irreducibility and Recurrence -- no general trick -- often easy
+			\item Correct Invariant Distribution -- super hard?
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Invariant Distribution Trick 1: Metropolis-Hastings}
+		\begin{itemize}
+			\item Proposal Distribution -- $p(V|v_i)$
+			\item Must be easy to draw from!
+			\item e.g. for example: flip one tag at random (table)
+			\item Then set:
+		\end{itemize}
+		
+		$$P(v'|v) = \min\left(1,\frac{P(v')P(v|v')}{P(v)P(v'|v)}\right)$$
+	\end{frame}
+	
+	\begin{frame}{Invariant Distribution Trick 1: Metropolis-Hastings}
+		\begin{itemize}
+			\item Proposal Distribution -- $p(V|v_i)$
+			\item Must be easy to draw from!
+			\item e.g. for example: flip one tag at random (table)
+			\item Then set:
+		\end{itemize}
+		
+		$$P(v'|v) = \min\left(1,\frac{P(v')P(v|v')}{P(v)P(v'|v)}\right)$$
+		
+		\vspace{10pt} Show that indeed $I(V) = P(V)$!
+	\end{frame}
+	
+	\begin{frame}{Invariant Distribution Trick 1: Metropolis-Hastings}
+		\begin{itemize}
+			\item Proposal Distribution -- $p(V|v_i)$
+			\item Must be easy to draw from!
+			\item e.g. for example: flip one tag at random (table)
+			\item Then set:
+		\end{itemize}
+		
+		$$P(v'|v) = \min\left(1,\frac{P(v')P(v|v')}{P(v)P(v'|v)}\right)$$
+		
+		\vspace{10pt} No problem with $$P(v) = \frac{f(v)}{\mbox{super complicated normalizer}}$$
+	\end{frame}
+	
+	\begin{frame}{Invariant Distribution Trick 2: Gibbs}
+		\begin{itemize}
+			\item Assume that 
+		\end{itemize}
+		
+		
+		
+		
+		
+	\end{frame}
+	
 	
 \end{document}
