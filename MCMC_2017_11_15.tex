@@ -29,6 +29,7 @@
 \setbeamertemplate{navigation symbols}{}
 
 \begin{document}
+	\centering
 	
 	\AtBeginSection[]{
 		\begin{frame}
@@ -59,7 +60,6 @@
 	\section{Motivation}
 	
 	\begin{frame}{Our Model From Last Session}
-		\centering
 		We were discussing how to learn a language model:
 		
 		\vspace{10pt} \begin{itemize}
@@ -87,6 +87,95 @@
 		$$P(w_1,w_2,\dots) = P(P_h)P(P_w) P_h(h_0) \prod_{i \in 1,\dots} P(w_i|h_i)P_h(h_i|h_{i-1})$$
 	\end{frame}
 	
-	
+	\begin{frame}{Make This Concrete}
 		
+		\begin{itemize}
+			\item<1-> $L = \{\mbox{Mary, sees, something, ., John}\}$
+			\item<1-> $H = \{1,2\}$
+			\item<1-> how many probability distributions/densities are we thinking about?
+			\item<2-> we need $2$ word given state, $2$ state given state, $1$ initial state + priors for each $\rightarrow$ $10$
+			\item<2-> $\alpha$ for all parameters is $0.5$ except:
+			\item<2-> $\alpha_{Mary}^1 = 1$, $\alpha_{sees}^2 = 1$ (symmetry breaking)
+		\end{itemize}
+		
+		
+		\vspace{10pt}Reminder: Dirichlet = $P(P_x) = \frac{\prod_{o \in O} P_x(o)^\alpha_o}{B(\boldsymbol{\alpha})}$
+	\end{frame}
+	
+	
+	\begin{frame}{Reasoning Based on the Model}
+		Assume corpus: $C =$ ``Mary sees something''
+		
+		\vspace{10pt}\begin{itemize}
+			\item What is posterior probability $P(P_{h}^{exam} | C)$, with:
+				\begin{itemize}
+					\item $P_{h}^{exam}(1|1) = 0.1$
+					\item $P_{h}^{exam}(2|1) = 0.9$
+					\item $P_{h}^{exam}(1|2) = 0.6$
+					\item $P_{h}^{exam}(2|1) = 0.4$
+					\item $P_{h}^{exam}(1|s) = 0.8$
+					\item $P_{h}^{exam}(2|s) = 0.2$
+				\end{itemize}
+			\item What is $P(h_2 = 2)$?
+			\item What is \dots
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{We Can Use Knowledge of Dirichlet}
+		Easy if we know the tags, e.g.:
+		
+		\vspace{10pt} ``Mary:1 sees:2 something:1''
+		
+		\begin{align*}
+			P(P_{h}^{exam}|T,C) & = & \frac{\prod_{i \in \{1,2\}} P_{h}^{exam}(i|1)^{\alpha_{i}^1}}{B(\boldsymbol{\alpha^1})} \\
+			& & \times \frac{\prod_{i \in \{1,2\}} P_{h}^{exam}(i|2)^{\alpha_{i}^2}}{B(\boldsymbol{\alpha^2})} \\
+			& & \times \frac{\prod_{i \in \{1,2\}} P_{h}^{exam}(i|s)^{\alpha_{i}^s}}{B(\boldsymbol{\alpha^s})}
+		\end{align*}
+		
+		\vspace{10pt}
+		Where $\alpha_{1}^s = 1.5$, $\alpha_{2}^1 = 1.5$, $\alpha_{1}^2 = 1.5$ and other $\alpha$s for hidden tags are still $0.5$
+	\end{frame}
+	
+	\begin{frame}{But We do not Know the Hidden Tags}
+		
+		\begin{align*}
+			P(P_{h}^{exam}|C) & = & \sum_{T} P(P_{h}^{exam}|T,C) P(T|C) \\
+			& = & \sum_{T} P(P_{h}^{exam}|T,C) \frac{P(C|T)P(T)}{P(C)}
+		\end{align*}
+	\end{frame}
+	
+	
+	\begin{frame}{Typical Problems in Bayesian Learning / Inference }
+		$$P(P_{h}^{exam}|C) = \overbrace{\sum_{T}}^{\substack{\mbox{annoying} \\ \mbox{sum}}} P(P_{h}^{exam}|T,C) \frac{P(C|T)P(T)}{\overbrace{P(C)}^{\substack{\mbox{normalization factor} \\ \mbox{(secretly annoying sum)}}}}$$
+		
+		\vspace{10pt} We need a generic fix for this problem!
+	\end{frame}
+	
+	\begin{frame}{Use Representatives}
+		When you want to know what people think, you do not ask everyone, you ask a few representatives.\\[10pt]
+		When you have an annoying some over $T$ you do not consider every possible asignment of tags, you only consider a few representative ones.
+	\end{frame}
+	
+	\begin{frame}{What Does it Mean to Be Representative}
+		Let us make our problem more general:
+		
+		\begin{align*}
+			P(P_{h}^{exam}|C) & = & \sum_{T} P(P_{h}^{exam}|T,C) \frac{P(C|T)P(T)}{P(C)} \\
+			& & \overbrace{\sum_{V}}^{\substack{\mbox{sum over}\\\mbox{variable}}} \overbrace{f(V)}^{\substack{\mbox{function} \\ \mbox{of variable}}} \overbrace{P(V)}^{\substack{\mbox{probability} \\ \mbox{of variable}}}
+		\end{align*}
+		
+		\vspace{10pt} Expected value problem -- Many problems in Bayesian Learning/Inference can be formulated as expected value problems
+	\end{frame}
+	
+	
+	\begin{frame}{The Law of Large Numbers}
+		The law of large numbers can be formulated as follows:
+		
+		\begin{itemize}
+			\item Produce sequence $V_1,V_2,\dots$
+			\item $P(V_i = v)$ given by $P(V)$ from our expected value
+			\item Then $\lim_{n \rightarrow \infty} \sum_{n} \frac{1}{n} f(v_i) = \sum_{V} f(V) P(V)$
+		\end{itemize}
+	\end{frame}
+	
 \end{document}
