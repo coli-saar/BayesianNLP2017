@@ -196,7 +196,7 @@
 		\begin{itemize}
 			\item  Produce a Markov Chain (later)
 			\item  Produce sequence $V_1,V_2,\dots$ from Markov Chain
-			\item Under certain Conditions pected value
+			\item Ensure certain conditions
 			\item Then $\lim_{n \rightarrow \infty} \sum_{n} \frac{1}{n} f(v_i) = \sum_{V} f(V) P(V)$
 		\end{itemize}
 	\end{frame}
@@ -204,8 +204,8 @@
 	\begin{frame}{What is a Markov Chain}
 		\begin{itemize}
 			\item Set of states $V$ -- will be variables of interest, can be infinite (but we assume discrete)
-			\item Initial Probability $P(V_0)$
-			\item Transition Probability $P(V_i|v_{i-1})$
+			\item Initial Probability $S(V_0)$
+			\item Transition Probability $T(V_i|v_{i-1})$
 		\end{itemize}
 	\end{frame}
 	
@@ -238,15 +238,15 @@
 	\end{frame}
 	
 	\begin{frame}{Magic Requirement 1: Invariant Distribution}
-		Invariant distribution $I(V)$ of chain $=$ $P(V)$
+		Invariant distribution $I(V)$ of chain $= P(V)$
 		
 		\vspace{10pt} What is invariant distribution?
 	\end{frame}
 	
 	\begin{frame}{Magic Requirement 1: Invariant Distribution}
-		Invariant distribution $I(V)$ of chain $=$ $P(V)$
+		Invariant distribution $I(V)$ of chain $=P(V)$
 		
-		\vspace{10pt} $I(V)$ s.t. for all $v$: $I(v) = \sum_{v' \in V} P(v|v')I(v')$
+		\vspace{10pt} $I(V)$ s.t. for all $v$: $I(v) = \sum_{v' \in V} T(v|v')I(v')$
 		
 		\vspace{10pt} Initial probability does not matter
 	\end{frame}
@@ -327,7 +327,7 @@
 		\begin{itemize}
 			\item  Produce a Markov Chain
 			\item  Produce sequence $V_1,V_2,\dots$ from Markov Chain
-			\item If Markove Chain Recurrent, 
+			\item If Markove Chain Recurrent, Irreducible, and has Invariant Distribution $I(V) = P(V)$
 			\item Then $\lim_{n \rightarrow \infty} \sum_{n} \frac{1}{n} f(v_i) = \sum_{V} f(V) P(V)$ 
 			\item[] See "Markov Chains" by James Norris
 			\item[] relevant chapters available online \url{http://www.statslab.cam.ac.uk/~james/Markov/})
@@ -348,10 +348,10 @@
 			\item Proposal Distribution -- $p(V|v_i)$
 			\item Must be easy to draw from!
 			\item e.g. for example: flip one tag at random (table)
-			\item Then set:
+			\item Then accept with probability:
+				$$T(v_i|v_{i-1}) = \min\left(1,\frac{P(v_i)p(v_{i-1}|v_i)}{P(v_{i-1})p(v_i|v_{i-1})}\right)$$
+			\item Otherwise $v_i = v_{i-1}$
 		\end{itemize}
-		
-		$$P(v'|v) = \min\left(1,\frac{P(v')P(v|v')}{P(v)P(v'|v)}\right)$$
 	\end{frame}
 	
 	\begin{frame}{Invariant Distribution Trick 1: Metropolis-Hastings}
@@ -359,10 +359,10 @@
 			\item Proposal Distribution -- $p(V|v_i)$
 			\item Must be easy to draw from!
 			\item e.g. for example: flip one tag at random (table)
-			\item Then set:
+			\item Then accept with probability:
+				$$T(v_i|v_{i-1}) = \min\left(1,\frac{P(v_i)p(v_{i-1}|v_i)}{P(v_{i-1})p(v_i|v_{i-1})}\right)$$
+			\item Otherwise $v_i = v_{i-1}$
 		\end{itemize}
-		
-		$$P(v'|v) = \min\left(1,\frac{P(v')P(v|v')}{P(v)P(v'|v)}\right)$$
 		
 		\vspace{10pt} Show that indeed $I(V) = P(V)$!
 	\end{frame}
@@ -372,24 +372,83 @@
 			\item Proposal Distribution -- $p(V|v_i)$
 			\item Must be easy to draw from!
 			\item e.g. for example: flip one tag at random (table)
-			\item Then set:
+			\item Then accept with probability:
+				$$T(v_i|v_{i-1}) = \min\left(1,\frac{P(v_i)p(v_{i-1}|v_i)}{P(v_{i-1})p(v_i|v_{i-1})}\right)$$
+			\item Otherwise $v_i = v_{i-1}$
 		\end{itemize}
-		
-		$$P(v'|v) = \min\left(1,\frac{P(v')P(v|v')}{P(v)P(v'|v)}\right)$$
 		
 		\vspace{10pt} No problem with $$P(v) = \frac{f(v)}{\mbox{super complicated normalizer}}$$
 	\end{frame}
 	
-	\begin{frame}{Invariant Distribution Trick 2: Gibbs}
+	\begin{frame}{Main Problem: Where to get $p(v_i|v_{i-1})$}
 		\begin{itemize}
-			\item Assume that 
+			\item Bad $p$ $\rightarrow$  lot of proposals that will be rejected
+			\item Lot of rejection $\rightarrow$ takes forever to converge
+			\item Often need just the right $p$ for a given problem
 		\end{itemize}
 		
-		
-		
-		
-		
+		$$T(v_i|v_{i-1}) = \min\left(1,\frac{P(v_i)p(v_{i-1}|v_i)}{P(v_{i-1})p(v_i|v_{i-1})}\right)$$
 	\end{frame}
 	
+	\begin{frame}{Invariant Distribution Trick 2: Gibbs}
+		\begin{itemize}
+			\item Assume that each $V = \langle t_1, \dots, t_n \rangle$
+			\item E.g., hidden tags in our language model
+			\item Pick a position $i$ at random (or systematically $\rightarrow$ harder to prove)
+			\item We want to change only $t_i$
+			\item Pick it according to $P(t_i|t_1,\dots,t_{i-1},t_{i+1},\dots,t_n)$
+		\end{itemize}
+		
+		\vspace{10pt}Show that this is case of Metropolis-Hastings
+	\end{frame}
+	
+	\begin{frame}{Invariant Distribution Trick 2: Gibbs}
+		\begin{itemize} 
+			\item Assume that each $V = \langle t_1, \dots, t_n \rangle$
+			\item E.g., hidden tags in our language model 
+			\item Pick a position $i$ at random (or systematically $\rightarrow$ harder to prove)
+			\item We want to change only $t_i$
+			\item Pick it according to $P(t_{i}'|t_1,\dots,t_{i-1},t_{i+1},\dots,t_n)$
+		\end{itemize}
+		
+		$$P(t_{i}'|t_1,\dots,t_{i-1},t_{i+1},\dots,t_n) = \frac{P(t_1,\dots,t_{i}',\dots,t_n)}{\sum_{\overline{t}_i} P(t_1,\dots,\overline{t}_{i},\dots,t_n)}$$
+	\end{frame}
+	
+	\begin{frame}{Invariant Distribution Trick 2: Gibbs}
+		\begin{itemize} 
+			\item Assume that each $V = \langle t_1, \dots, t_n \rangle$
+			\item E.g., hidden tags in our language model 
+			\item Pick a position $i$ at random (or systematically $\rightarrow$ harder to prove)
+			\item We want to change only $t_i$
+			\item Pick it according to $P(t_{i}'|t_1,\dots,t_{i-1},t_{i+1},\dots,t_n)$
+		\end{itemize}
+		
+		$$P(t_{i}'|\mbox{rest}) = \frac{f(t_1,\dots,t_{i}',\dots,t_n)}{\substack{\mbox{super} \\ \mbox{complicated} \\ \mbox{normalizer}} \sum_{\overline{t}_i} P(t_1,\dots,\overline{t}_{i},\dots,t_n)}$$
+	\end{frame}	
+	
+	\begin{frame}{Invariant Distribution Trick 2: Gibbs}
+			\begin{itemize} 
+				\item Assume that each $V = \langle t_1, \dots, t_n \rangle$
+				\item E.g., hidden tags in our language model 
+				\item Pick a position $i$ at random (or systematically $\rightarrow$ harder to prove)
+				\item We want to change only $t_i$
+				\item Pick it according to $P(t_{i}'|t_1,\dots,t_{i-1},t_{i+1},\dots,t_n)$
+			\end{itemize}
+			
+			$$P(t_{i}'|\mbox{rest}) = \frac{f(t_1,\dots,t_{i}',\dots,t_n)}{\substack{\mbox{super} \\ \mbox{complicated} \\ \mbox{normalizer}}^2 \sum_{\overline{t}_i} f(t_1,\dots,\overline{t}_{i},\dots,t_n)}$$
+	\end{frame}
+	
+	\begin{frame}{Main Problem: Stuck Locally}
+		\begin{itemize}
+			\item For many problems values of $t_i$ very dependent
+			\item Need to really make sure that Irreducible
+			\item Likely to get stuck in certain locations for long time
+			\item Two box example (table)
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Finish}
+		Let us work through Gibbs sampling for our example.
+	\end{frame}
 	
 \end{document}
