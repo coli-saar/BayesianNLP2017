@@ -367,6 +367,23 @@
 		\vspace{10pt} Show that indeed $I(V) = P(V)$!
 	\end{frame}
 	
+	\begin{frame}{Detailed Balance}
+		$T$ in detailed balance w.r.t. $P$:
+		
+		$$\forall v,v': P(v)T(v'|v) = P(v')T(v|v') $$
+	\end{frame}
+	
+	\begin{frame}{Detailed Balance}
+		Detailed Balance implies $P$ invariant for $T$:
+			
+		\begin{align*}
+			\sum_{v'} P(v') T(v|v') & = \sum_{v'} P(v) T(v'|v) \\
+			& = P(v)
+		\end{align*}
+		
+		\vspace{10pt} Show that MH ensures detailed balance.
+	\end{frame}
+	
 	\begin{frame}{Invariant Distribution Trick 1: Metropolis-Hastings}
 		\begin{itemize}
 			\item Proposal Distribution -- $p(V|v_i)$
@@ -445,10 +462,6 @@
 			\item Likely to get stuck in certain locations for long time
 			\item Two box example (table)
 		\end{itemize}
-	\end{frame}
-	
-	\begin{frame}{Finish}
-		Let us work through Gibbs sampling for our example.
 	\end{frame}
 	
 \end{document}
