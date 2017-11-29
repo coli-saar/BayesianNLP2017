@@ -1,0 +1,270 @@
+\documentclass{beamer}
+
+%\usepackage{listings}
+%\usepackage[francais]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+%\usepackage{MyriadPro}
+\usepackage{cabin}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{positioning, backgrounds, shapes, chains, decorations.pathmorphing}
+\usepackage{amsmath,amsthm,amssymb}  
+\usepackage{stmaryrd}
+%\usepackage{mdsymbol}
+\usepackage{MnSymbol}
+\usepackage{xcolor}
+\usepackage{verbatim}
+\usepackage{array}
+%\usepackage{csquotes}
+
+
+\useoutertheme{infolines}
+
+\newcommand{\hidden}[1]{}
+
+%colors
+\definecolor{darkgreen}{rgb}{0,0.5,0}
+\usebeamercolor{block title}
+\definecolor{beamerblue}{named}{fg}
+\usebeamercolor{alert block title}
+\definecolor{beamealert}{named}{fg}
+
+\renewcommand{\colon}{\!:\!}
+
+
+\newcommand\paraitem{%
+ \quad
+ \makebox[\labelwidth][r]{%
+ \makelabel{%
+ \usebeamertemplate{itemize \beameritemnestingprefix item}}}\hskip\labelsep}
+
+\newcommand{\mmid}{\mathbin{{\mid}{\mid}}}
+
+\begin{document}
+
+\title{Variational Inference} 
+\author[Antoine Venant]{Christoph Teichmann \and Antoine Venant}
+%\institute{UDS COLI}
+\date{\today}
+\maketitle
+
+
+\begin{frame}
+  \frametitle{Past Lectures and Today}
+  \begin{enumerate}
+  \item \textbf{General Principles of Bayesian Inference:} define a random quantity of interest ${}\rightarrow{}$ define a \emph{joint} density of probability ${}\rightarrow{}$ condition on observed data to obtain a predictive \emph{posterior} density.
+  \item \textbf{The Dirichlet-Multinomial model:} how to define prior densities over discrete (finite or countably infinite) probability distributions.
+  \item \textbf{MCMC Methods:} how to \emph{Sample} from (and compute expected values under) the posterior distribution when direct computation of the posterior density is not directly feasible.
+  \item<2-> \textbf{\alert{Variational Inference:}} \emph{Approximate} the posterior distribution.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Problem Reminder}
+  \begin{itemize}
+  \item Recall the HMM language model from last session:\\
+    \begin{minipage}{\linewidth}
+    \begin{center}
+      \begin{tikzpicture}[state/.style={draw, circle}]
+        \node[state] (ti)  at (0,0) {$h_i$};
+        \node[state] (timinus) at (-3,0) {$h_{i-1}$};
+        \node[state] (tiplus) at (3,0) {$h_{i+1}$};
+        \node[] (wi) at (0,-1) {$w_{i}$};
+        \node[] (wiminus) at (-3,-1) {$w_{i-1}$};
+        \node[] (wiplus) at (3,-1)  {$w_{i+1}$};
+        \node[] (ldots) at (-5,0) {\dots};
+        \node[] (rdots) at (5,0) {\dots};
+
+        \draw (ti) edge[->, bend left] node[above, midway] {$\delta(h_{i+1} \mid h_i)$}  (tiplus);
+        \draw (timinus) edge[->, bend left] node[above, midway] {$\delta(h_{i} \mid h_{i-1})$}  (ti);
+        \draw (ldots) edge[->, bend left] (timinus);
+        \draw (tiplus) edge[->, bend left] (rdots);
+
+        \draw (timinus) edge[->] node[left, midway] {$e(w_{i-1} \mid h_{i-1})$}  (wiminus);
+        \draw (ti) edge[->] node[left, midway] {$e(w_{i} \mid h_{i})$}  (wi);
+        \draw (tiplus) edge[->] node[left, midway] {$e(w_{i+1} \mid h_{i+1})$}  (wiplus);
+        
+      \end{tikzpicture}
+    \end{center}
+    \end{minipage}
+  \item (observed) words $w_i \in L$. hidden tags / latent variables $h_i \in H$.
+  \item Transition probabilities $\delta(h_{i+1} \mid h_i)$ from hidden states to hidden states.
+  \item Emission probabilities $e(w_i \mid h_i)$ in every hidden states.
+  \item \bf prior densities $p_0( \delta(\cdot \mid  h))$ (over probability vectors over $H$) for every $h$.
+  \item \bf prior densities $p_0(e(\cdot \mid h))$ (over probability vectors over $L$) for every $h$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Problem Reminder (cont'd)}
+  \begin{alertblock}{Inference}
+    After observing the sequence of words ${\bf w} = w_0 \dots w_n$, what are the posterior densities over transitions and emission probabilities?
+    \begin{itemize}
+    \item Assume for simplicity $w_0 = \texttt{start}$, $t_0 = \texttt{<S>}$ with prob. 1.
+    \end{itemize}
+    \[\displaystyle\begin{aligned}
+    &p(\langle \delta(\cdot \mid h) \rangle_{h \in H}, \langle e(\cdot \mid h)_{h \in H} \rangle \mid {\bf w}) = \frac{p(\langle \delta(\cdot \mid h) \rangle_{h \in H}, \langle e(\cdot \mid h)_{h \in H} \rangle, {\bf w})}{p( {\bf w})}\\
+    %\only<1>{&=\frac{\prod_{h \in H} p_0(\delta(\cdot \mid h)) \times p_0(e(\cdot \mid h)) \times \sum_{ h_0 \dots h_n}  \prod^n_{i=1}  \delta(h_i \mid h_{i-1}) \times e(w_i \mid h_i)}{p({\bf w})}.}\\
+    &=\frac{\prod_{h \in H} p_0(\delta(\cdot \mid h)) \times  p_0(e(\cdot \mid h)) \times \overbrace{\sum_{{\bf h_0 \dots h_n}} \prod^n_{i=1} \delta(h_i \mid h_{i-1}) \times e(w_i \mid h_i)}^{\textnormal{computable in O(n|H|) } \textnormal{(\emph{via} trick)}} }{\underbrace{p({\bf w})}_{\textnormal{Expensive computation: marginalize twice over $|H|-1$ simplex.}}}.
+    \end{aligned}
+    \] 
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}{More generally}
+    \begin{itemize}
+    \item ${\bf Z}$ random variable describing latent variables.
+    \item ${\bf X}$ random variable describing observed events.
+    \item Joint density $p({\bf X} = {\bf x}, {\bf Z} = {\bf z} ) = \overbrace{p({\bf Z} = {\bf z})}^{\textnormal{prior}} \times p({\bf X} = {\bf X} \mid {\bf Z} = {\bf z})$.
+    \item We're interested in posterior density $p({\bf Z} = {\bf z} \mid {\bf X} = {\bf x}) = \frac{p({\bf Z} = z, {\bf X} = {\bf x})}{p({\bf X}= {\bf x})}$. But too expensive to compute (in particular $p({\bf X}= {\bf x})$).
+    \item Last time: find way to sample without explicit computation.
+    \item Today, \emph{variational inference}: find $q^*({\bf Z} = {\bf z})$ the best approximation of $p({\bf Z} = {\bf z} \mid {\bf X} = {\bf x})$  over a family of probability densities $\mathcal{Q}$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Why another inference technique?}
+  \begin{itemize}
+  \item Metropolis-Hastings guarantees convergence in probability, but convergence time might be very slow (random walk effect).
+  \item Variational inference generally faster but yield approximate distribution.
+  \item Hence variational inference can be useful to quickly evaluate a wide range of model over large data.
+  \item Sometimes Gibbs Sampling not possible, MCMC methods not straightforwardly usable. 
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Variational Inference}
+  \begin{enumerate}
+  \item Define a set of probability densities over latent variables $\mathcal{Q}$ (in pratice $\mathcal{Q} = \{ q_{\theta}({\bf Z}) \mid \theta \in \Theta\}$, $\theta$ vector of so called \emph{variational parameters}).
+  \item Search for $q^* \in \mathcal{Q}$ s.t. $q^*$ mimizes the Kullback-Leibler divergence to $p({\bf Z} \mid {\bf x})$.
+    \[q^* = argmin_{q \in \mathcal{Q}} KL(q({\bf Z}) \mmid p({\bf Z} \mid {\bf x}) )\]
+  \end{enumerate}
+  \begin{block}{KL divergence}
+    \[
+    \begin{aligned}
+      KL(p_1({\bf Z}) \mmid p_2({\bf Z})) &\triangleeq \int p_1({\bf z}) (log(p_1({\bf z})) - log(p_2({\bf z}))) d{\bf z}\\
+      &= \mathbb{E}_{p_1}(log(p_1({\bf Z}))) - \mathbb{E}_{p_1}(log(p_2({\bf Z}))).
+    \end{aligned}
+    \]
+    \begin{itemize}
+    \item Information theoretic quantity.
+    \item is $0$ only when densities are equal.
+    \item is always positive.
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Evidence Lower Bound}
+  \begin{itemize}
+  \item $KL(q({\bf Z}) \mmid p({\bf Z} \mid {\bf x}) = \mathbb{E}_{q}(log(q({\bf Z}))) - \mathbb{E}_{q}(log(p({\bf Z} \mid {\bf x})))$ depends on $p({\bf Z} \mid {\bf x})$ which we don't know how to compute.
+  \item $KL(q({\bf Z}) \mmid p({\bf Z} \mid {\bf x}) = \mathbb{E}_{q}(log(q({\bf Z}))) - \mathbb{E}_{q}(log(p({\bf Z}, {\bf X}={\bf x}))) + log(p({\bf x}))$ (Exercise).
+  \item We can mimize instead $\mathbb{E}_{q}(log(q({\bf Z}))) - \mathbb{E}_{q}(log(p({\bf Z}, {\bf X}={\bf x}))$, or equivalently maximize
+    \[
+    \begin{aligned}
+      elb(q) &= \mathbb{E}_{q}(log(p({\bf Z}, {\bf X} = {\bf x}))) - \mathbb{E}_{q}(log(q({\bf Z})))\\
+      &= \mathbb{E}_{q}(log(p({\bf X} = {\bf x} \mid {\bf Z}))) - KL(q({\bf Z}) \mmid p({\bf Z}))
+    \end{aligned}
+    \]
+    (Exercise: proove this).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Evidence Lower Bound (cont'd)}
+  \[elb(q) = \mathbb{E}_{q}(log(p({\bf X} = {\bf x} \mid {\bf Z}))) - KL(q({\bf Z}) \mmid p({\bf Z}))\]
+  \begin{itemize}
+  \item Does not depend on the normalization factor $p({\bf x})$ anymore!
+  \item $elb(q) \le log(p({\bf x}))$ (Exercise).
+  \item But what should $\mathcal{Q}$ look like? How do we find optimal $q^*$?
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Mean-field Variational Inference}
+  \begin{itemize}
+  \item Assume ${\bf Z} = \langle Z_1, \dots, Z_n\rangle$.
+  \item Simplifying assumption: let $\mathcal{Q}$ be such that latent variables $Z_i$ and $Z_j$ are independant under every $q \in \mathcal{Q}$.
+  \item $\mathcal{Q} = \prod^n_{i=1} \mathcal{Q}_i$, for every $q = \langle q_1, \dots, q_n   \rangle \in \mathcal{Q}$
+    \[q(Z_1 = z_1,\dots, Z_n = z_n) = \prod^n_{i = 1} q_i(Z_i = z_i). \]
+  \item This is known has the \emph{mean-field variational family}.
+  \item Idea: can approximate marginals $p(Z_i \mid x)$ closely, but won't account for dependence of the latent variables on one another under the \emph{true} joint posterior $p({\bf Z} \mid x)$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Optimization}
+  
+  \begin{exampleblock}{Recall Gibbs Sampling from last session:}
+    \begin{itemize}
+    \item<2-> From current state $\langle z^{t+1}_1, \dots, z^{t+1}_{i-1}, z^{t}_{i}, \dots, z^{t}_n \rangle$.
+    \item<3-> Fix ${\bf z}_{\neg i} = \langle z^{t+1}_1, \dots, z^{t+1}_{i-1}, z^t_{i+1}, \dots, z^t_n \rangle$.
+    \item<4-> Sample $z^{t+1}_i$ from conditional distribution $p(z^{t+1} \mid {\bf z}_{\neg i}, x)$.
+    \end{itemize}
+    \alert{\uncover<5->{Successive (manageable) coordinate updates yield new samples!}}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}{Optimization (cont'd)}
+  \begin{block}<1->{Coordinate Ascent Mean-field V.I.}
+    %Also ressorts to successive coordinate updates
+    To find a (local) optimum $q^* = \langle q^*_1, \dots, q^*_n  \rangle \in \mathcal{Q}$:
+    \begin{itemize}
+    \item<2-> Assume approximation after step $t$: $q^t_0 = \langle q^t_1, \dots q^t_n  \rangle$.
+    \item<3-> Update coordinate $1,\dots, n$ successively.
+    \item<4-> If coordinate $1, \dots, i-1$ have been updated: \[q^t_{i-1} = \langle q^{t+1}_1, \dots, q^{t+1}_{i-1}, q^t_i,q^{t}_{i+1},\dots, q^{t}_n  \rangle\].
+    \item<5-> Then update coordinate $i$ following \[q^{t+1}_{i} = argmax_{q'_i \in \mathcal{Q}_i} elb(\langle q^{t+1}_1, \dots, q^{t+1}_{i-1}, q'_i,q^t_{i+1},\dots, q^{t}_n  \rangle)\].
+    %\item<6-> When all coordinate, have been updated, loop back to the first coordinate.
+    \end{itemize}
+    \alert{\uncover<6->{Successive (manageable) coordinate updates yield refined approximations!}}
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Update Rule}
+  \begin{alertblock}{Update rule}
+    \begin{itemize}
+    \item How find $q^{t+1}_{i} = argmax_{q'_i \in \mathcal{Q}_i} elb(\langle q^{t+1}_1, \dots, q^{t+1}_{i-1}, q'_i,\dots, q^{t}_n  \rangle)$?
+    \item (depending on time) we admit the following result:
+      \[ log(q^{t+1}_{i}(Z_i = z_i)) = \frac{\overbrace{\mathbb{E}_{q_{\neg i}}(log(p(Z_i = z_i, {\bf Z_{\neg i}} = {\bf z_{\neg i}}, {\bf x} )))}^{\textnormal{Will generally decompose over the $q_i$}}}{\underbrace{\int_{z} \mathbb{E}_{q_{\neg i}}(log(p(Z_i = z \mid {\bf z_{\neg i}}, {\bf x} )))dz  }_{\textnormal{Summation over one coordinate only}}} \].
+   
+    \end{itemize}
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Back to the HMM example}
+  
+  %\item %Recall the HMM language model from last session:\\
+    \begin{minipage}{\linewidth}
+      \begin{center}
+        \begin{tikzpicture}[state/.style={draw, circle}]
+          \node[state] (ti)  at (0,0) {$h_i$};
+          \node[state] (timinus) at (-3,0) {$h_{i-1}$};
+          \node[state] (tiplus) at (3,0) {$h_{i+1}$};
+          \node[] (wi) at (0,-1) {$w_{i}$};
+          \node[] (wiminus) at (-3,-1) {$w_{i-1}$};
+          \node[] (wiplus) at (3,-1)  {$w_{i+1}$};
+          \node[] (ldots) at (-5,0) {\dots};
+          \node[] (rdots) at (5,0) {\dots};
+        
+          \draw (ti) edge[->, bend left] node[above, midway] {$\delta(h_{i+1} \mid h_i)$}  (tiplus);
+          \draw (timinus) edge[->, bend left] node[above, midway] {$\delta(h_{i} \mid h_{i-1})$}  (ti);
+          \draw (ldots) edge[->, bend left] (timinus);
+          \draw (tiplus) edge[->, bend left] (rdots);
+          
+        \draw (timinus) edge[->] node[left, midway] {$e(w_{i-1} \mid h_{i-1})$}  (wiminus);
+        \draw (ti) edge[->] node[left, midway] {$e(w_{i} \mid h_{i})$}  (wi);
+        \draw (tiplus) edge[->] node[left, midway] {$e(w_{i+1} \mid h_{i+1})$}  (wiplus);
+        
+        \end{tikzpicture}
+      \end{center}
+    \end{minipage}
+    \begin{itemize}
+    \item We let priors follow Dirichlet distributions:
+    \[p_0( \delta(\cdot \mid  h)) = \frac{\prod_{h' \in H} \delta(h' \mid  h)^{\alpha^{h'}_h}}{B({\bf \alpha^{\delta}_h})} \quad p_0( e(\cdot \mid  h)) = \frac{\prod_{w \in L} \delta(w \mid  h)^{\alpha^{w}_h}}{B({\bf \alpha^{e}_{h}})}\]
+    with $\alpha^{\delta}_h =\langle \alpha^{h'}_h \rangle_{h' \in H}$ and $\alpha^{e}_h =\langle \alpha^w_h \rangle_{w \in L}$.    
+  \end{itemize}
+\end{frame}
+ 
+
+\end{document}
